@@ -15,7 +15,13 @@ export class AudioContextManager implements IAudioContextManager {
   public initialize(): boolean {
     try {
       if (!this.audioContext) {
+        console.log("Creating new AudioContext");
         this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        
+        if (!this.audioContext) {
+          console.error("Failed to create AudioContext");
+          return false;
+        }
         
         // Create analyzer node
         this.analyser = this.audioContext.createAnalyser();
@@ -25,11 +31,23 @@ export class AudioContextManager implements IAudioContextManager {
         this.masterGain = this.audioContext.createGain();
         this.masterGain.gain.value = 0.5; // Default volume
         
-        // Connect nodes
+        // Connect nodes in correct order
         this.masterGain.connect(this.audioContext.destination);
         this.analyser.connect(this.masterGain);
         
-        console.log("Audio context initialized successfully");
+        console.log("Audio context initialized successfully with state:", this.audioContext.state);
+        
+        // Resume context if it's suspended (autoplay policies in some browsers)
+        if (this.audioContext.state === 'suspended') {
+          console.log("Audio context is suspended, attempting to resume");
+          this.audioContext.resume().then(() => {
+            console.log("Audio context resumed successfully");
+          }).catch(err => {
+            console.warn("Could not resume audio context:", err);
+          });
+        }
+      } else {
+        console.log("Audio context already exists, skipping initialization");
       }
       
       return true;
@@ -74,7 +92,11 @@ export class AudioContextManager implements IAudioContextManager {
    */
   public suspend(): void {
     if (this.audioContext && this.audioContext.state === 'running') {
-      this.audioContext.suspend();
+      this.audioContext.suspend().then(() => {
+        console.log("Audio context suspended successfully");
+      }).catch(err => {
+        console.warn("Could not suspend audio context:", err);
+      });
     }
   }
 
@@ -83,7 +105,11 @@ export class AudioContextManager implements IAudioContextManager {
    */
   public resume(): void {
     if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
+      this.audioContext.resume().then(() => {
+        console.log("Audio context resumed successfully");
+      }).catch(err => {
+        console.warn("Could not resume audio context:", err);
+      });
     }
   }
 
@@ -92,18 +118,32 @@ export class AudioContextManager implements IAudioContextManager {
    */
   public cleanup(): void {
     if (this.masterGain) {
-      this.masterGain.disconnect();
+      try {
+        this.masterGain.disconnect();
+      } catch (e) {
+        console.warn("Error disconnecting master gain:", e);
+      }
       this.masterGain = null;
     }
     
     if (this.analyser) {
-      this.analyser.disconnect();
+      try {
+        this.analyser.disconnect();
+      } catch (e) {
+        console.warn("Error disconnecting analyser:", e);
+      }
       this.analyser = null;
     }
     
     if (this.audioContext) {
-      this.audioContext.close();
+      try {
+        this.audioContext.close();
+      } catch (e) {
+        console.warn("Error closing audio context:", e);
+      }
       this.audioContext = null;
     }
+    
+    console.log("Audio context manager cleaned up successfully");
   }
 }

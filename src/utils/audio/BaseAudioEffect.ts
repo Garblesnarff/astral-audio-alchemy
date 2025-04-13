@@ -22,6 +22,10 @@ export abstract class BaseAudioEffect {
     if (this.audioContext && this.analyser) {
       this.masterGain = this.registerNode(this.audioContext.createGain());
       this.masterGain.gain.value = 1;
+      
+      // Connect to the analyzer directly
+      // This is the key fix - we connect directly to the analyzer,
+      // not through another node
       this.masterGain.connect(this.analyser);
     }
   }

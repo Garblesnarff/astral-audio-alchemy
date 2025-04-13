@@ -10,7 +10,6 @@ export class BinauralOscillator extends BaseAudioEffect {
   private rightOscillator: OscillatorNode | null = null;
   private leftGain: GainNode | null = null;
   private rightGain: GainNode | null = null;
-  private stereoPanner: StereoPannerNode | null = null;
   private merger: ChannelMergerNode | null = null;
   private baseFrequency: number = 200;
   private beatFrequency: number = 10;
@@ -55,7 +54,7 @@ export class BinauralOscillator extends BaseAudioEffect {
       this.leftGain.gain.value = this.volume;
       this.rightGain.gain.value = this.volume;
       
-      // Connect nodes - ensure proper connections
+      // Connect oscillators to their respective gain nodes
       this.leftOscillator.connect(this.leftGain);
       this.rightOscillator.connect(this.rightGain);
       
@@ -70,8 +69,7 @@ export class BinauralOscillator extends BaseAudioEffect {
       this.leftOscillator.start();
       this.rightOscillator.start();
       
-      console.log("Binaural oscillator connections verified, starting oscillators");
-      console.log("Binaural oscillator setup complete and playing");
+      console.log("Binaural oscillator setup complete and oscillators started");
       
       this.isPlaying = true;
     } catch (e) {
@@ -93,10 +91,19 @@ export class BinauralOscillator extends BaseAudioEffect {
     this.baseFrequency = frequency;
     
     if (this.leftOscillator) {
-      this.leftOscillator.frequency.value = frequency;
+      try {
+        this.leftOscillator.frequency.value = frequency;
+      } catch (e) {
+        console.error("Error setting left oscillator frequency:", e);
+      }
     }
+    
     if (this.rightOscillator) {
-      this.rightOscillator.frequency.value = frequency + this.beatFrequency;
+      try {
+        this.rightOscillator.frequency.value = frequency + this.beatFrequency;
+      } catch (e) {
+        console.error("Error setting right oscillator frequency:", e);
+      }
     }
   }
   
@@ -112,8 +119,12 @@ export class BinauralOscillator extends BaseAudioEffect {
     this.beatFrequency = frequency;
     
     if (this.rightOscillator && this.leftOscillator) {
-      // Update right oscillator frequency based on left + beat difference
-      this.rightOscillator.frequency.value = this.baseFrequency + frequency;
+      try {
+        // Update right oscillator frequency based on left + beat difference
+        this.rightOscillator.frequency.value = this.baseFrequency + frequency;
+      } catch (e) {
+        console.error("Error setting beat frequency:", e);
+      }
     }
   }
   
@@ -129,11 +140,19 @@ export class BinauralOscillator extends BaseAudioEffect {
     
     // Update individual gains
     if (this.leftGain) {
-      this.leftGain.gain.value = volume;
+      try {
+        this.leftGain.gain.value = volume;
+      } catch (e) {
+        console.error("Error updating left gain volume:", e);
+      }
     }
     
     if (this.rightGain) {
-      this.rightGain.gain.value = volume;
+      try {
+        this.rightGain.gain.value = volume;
+      } catch (e) {
+        console.error("Error updating right gain volume:", e);
+      }
     }
   }
   
@@ -169,7 +188,6 @@ export class BinauralOscillator extends BaseAudioEffect {
       this.rightOscillator = null;
       this.leftGain = null;
       this.rightGain = null;
-      this.stereoPanner = null;
       this.merger = null;
       
       this.isPlaying = false;
