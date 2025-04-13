@@ -66,7 +66,7 @@ export class AudioPlayer implements IAudioPlayer {
         volume
       };
 
-      // Initialize and set up the binaural oscillator
+      // Always initialize and set up the binaural oscillator for all presets
       this.binauralOscillator = new BinauralOscillator(audioContext, analyser);
       this.binauralOscillator.setup(options);
       
