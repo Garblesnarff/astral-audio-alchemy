@@ -19,6 +19,9 @@ export class BinauralBeatGenerator {
   private ambientPadGain: GainNode | null = null;
   private schumann: OscillatorNode | null = null;
   private schumannGain: GainNode | null = null;
+  private schumannLFO: OscillatorNode | null = null;
+  private schumannLFOGain: GainNode | null = null;
+  private breathFilter: BiquadFilterNode | null = null;
   private isPlaying = false;
   private analyser: AnalyserNode | null = null;
   private baseFrequency = 200;
@@ -26,6 +29,7 @@ export class BinauralBeatGenerator {
   private baseVolume = 0.5;
   private noiseVolume = 0.1;
   private currentPreset = '';
+  private activeNodes: AudioNode[] = []; // Track all active nodes for better cleanup
 
   // Initialize the audio context
   initialize() {
@@ -34,6 +38,7 @@ export class BinauralBeatGenerator {
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 1024;
       this.analyser.connect(this.audioContext.destination);
+      console.log("Audio context initialized successfully");
       return true;
     } catch (e) {
       console.error('Web Audio API is not supported in this browser', e);
@@ -51,13 +56,23 @@ export class BinauralBeatGenerator {
     return this.analyser;
   }
 
+  // Register an audio node for tracking (for cleanup)
+  private registerNode(node: AudioNode) {
+    this.activeNodes.push(node);
+    return node;
+  }
+
   // Start the binaural beat
   start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'custom') {
     if (!this.audioContext) {
       if (!this.initialize()) return;
     }
     
+    console.log(`Starting with preset: ${preset}, baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}`);
+    
+    // Make sure we stop any previous sounds
     this.stop();
+    
     this.isPlaying = true;
     this.currentPreset = preset;
     this.baseFrequency = baseFreq;
@@ -68,6 +83,7 @@ export class BinauralBeatGenerator {
     
     // For the alien summoning preset, add the special effects
     if (preset === 'alien') {
+      console.log("Adding alien effects");
       this.addAlienEffects();
     }
   }
@@ -75,17 +91,19 @@ export class BinauralBeatGenerator {
   private setupOscillators(baseFreq: number, beatFreq: number) {
     if (!this.audioContext || !this.analyser) return;
     
+    console.log(`Setting up oscillators with baseFreq: ${baseFreq}, beatFreq: ${beatFreq}`);
+    
     // Create oscillators
-    this.leftOscillator = this.audioContext.createOscillator();
-    this.rightOscillator = this.audioContext.createOscillator();
+    this.leftOscillator = this.registerNode(this.audioContext.createOscillator());
+    this.rightOscillator = this.registerNode(this.audioContext.createOscillator());
     
     // Create gain nodes
-    this.leftGain = this.audioContext.createGain();
-    this.rightGain = this.audioContext.createGain();
-    this.masterGain = this.audioContext.createGain();
+    this.leftGain = this.registerNode(this.audioContext.createGain());
+    this.rightGain = this.registerNode(this.audioContext.createGain());
+    this.masterGain = this.registerNode(this.audioContext.createGain());
     
     // Create stereo panner
-    this.stereoPanner = this.audioContext.createStereoPanner();
+    this.stereoPanner = this.registerNode(this.audioContext.createStereoPanner());
     
     // Set frequencies for left and right ear
     this.leftOscillator.frequency.value = baseFreq;
@@ -118,20 +136,20 @@ export class BinauralBeatGenerator {
     if (!this.audioContext || !this.analyser) return;
     
     // 1. Create Schumann resonance (7.83 Hz via modulation of 100 Hz base tone)
-    this.schumann = this.audioContext.createOscillator();
+    this.schumann = this.registerNode(this.audioContext.createOscillator());
     this.schumann.frequency.value = 100; // Base tone at 100 Hz
-    this.schumannGain = this.audioContext.createGain();
+    this.schumannGain = this.registerNode(this.audioContext.createGain());
     this.schumannGain.gain.value = this.baseVolume * 0.5;
     
     // Create LFO for modulation at 7.83 Hz to simulate Schumann resonance
-    const schumannLFO = this.audioContext.createOscillator();
-    schumannLFO.frequency.value = 7.83; // Schumann resonance frequency
-    const schumannLFOGain = this.audioContext.createGain();
-    schumannLFOGain.gain.value = 10; // Modulation depth
+    this.schumannLFO = this.registerNode(this.audioContext.createOscillator());
+    this.schumannLFO.frequency.value = 7.83; // Schumann resonance frequency
+    this.schumannLFOGain = this.registerNode(this.audioContext.createGain());
+    this.schumannLFOGain.gain.value = 10; // Modulation depth
     
     // Connect LFO to modulate the gain of the 100 Hz oscillator
-    schumannLFO.connect(schumannLFOGain);
-    schumannLFOGain.connect(this.schumannGain.gain);
+    this.schumannLFO.connect(this.schumannLFOGain);
+    this.schumannLFOGain.connect(this.schumannGain.gain);
     
     // Connect Schumann oscillator to the output
     this.schumann.connect(this.schumannGain);
@@ -139,12 +157,12 @@ export class BinauralBeatGenerator {
     
     // Start oscillators
     this.schumann.start();
-    schumannLFO.start();
+    this.schumannLFO.start();
     
     // 2. Add 528 Hz harmonic (spiritual frequency)
-    this.harmonicOscillator = this.audioContext.createOscillator();
+    this.harmonicOscillator = this.registerNode(this.audioContext.createOscillator());
     this.harmonicOscillator.frequency.value = 528; // 528 Hz spiritual frequency
-    this.harmonicGain = this.audioContext.createGain();
+    this.harmonicGain = this.registerNode(this.audioContext.createGain());
     this.harmonicGain.gain.value = this.baseVolume * 0.25; // Quieter than the main tone
     
     // Connect harmonic oscillator
@@ -153,10 +171,10 @@ export class BinauralBeatGenerator {
     this.harmonicOscillator.start();
     
     // 3. Add 432 Hz ambient pad (masking layer)
-    this.ambientPadOscillator = this.audioContext.createOscillator();
+    this.ambientPadOscillator = this.registerNode(this.audioContext.createOscillator());
     this.ambientPadOscillator.frequency.value = 432; // 432 Hz "natural" frequency
     this.ambientPadOscillator.type = 'sine';
-    this.ambientPadGain = this.audioContext.createGain();
+    this.ambientPadGain = this.registerNode(this.audioContext.createGain());
     this.ambientPadGain.gain.value = this.baseVolume * 0.2; // Even more subtle
     
     // Connect ambient pad
@@ -166,9 +184,9 @@ export class BinauralBeatGenerator {
     
     // 4. Add 17 kHz ultrasonic ping (subtle, for "NHI tech-detection")
     // Note: Many people won't hear this, and many devices can't reproduce it
-    this.ultrasonicOscillator = this.audioContext.createOscillator();
+    this.ultrasonicOscillator = this.registerNode(this.audioContext.createOscillator());
     this.ultrasonicOscillator.frequency.value = 17000; // 17 kHz
-    this.ultrasonicGain = this.audioContext.createGain();
+    this.ultrasonicGain = this.registerNode(this.audioContext.createGain());
     this.ultrasonicGain.gain.value = this.baseVolume * 0.05; // Very subtle
     
     // Connect ultrasonic oscillator
@@ -187,12 +205,12 @@ export class BinauralBeatGenerator {
     }
     
     // Create and configure noise source
-    this.noiseGenerator = this.audioContext.createBufferSource();
+    this.noiseGenerator = this.registerNode(this.audioContext.createBufferSource());
     this.noiseGenerator.buffer = noiseBuffer;
     this.noiseGenerator.loop = true;
     
     // Create gain node for noise with breath-like modulation
-    this.noiseGain = this.audioContext.createGain();
+    this.noiseGain = this.registerNode(this.audioContext.createGain());
     this.noiseGain.gain.value = 0; // Start silent
     
     // Create breath effect with gain automation
@@ -214,15 +232,15 @@ export class BinauralBeatGenerator {
     }
     
     // Filter the noise to make it more organic
-    const breathFilter = this.audioContext.createBiquadFilter();
-    breathFilter.type = 'lowpass';
-    breathFilter.frequency.value = 800; // Cut off higher frequencies
-    breathFilter.Q.value = 0.5;
+    this.breathFilter = this.registerNode(this.audioContext.createBiquadFilter());
+    this.breathFilter.type = 'lowpass';
+    this.breathFilter.frequency.value = 800; // Cut off higher frequencies
+    this.breathFilter.Q.value = 0.5;
     
     // Connect noise
     this.noiseGenerator.connect(this.noiseGain);
-    this.noiseGain.connect(breathFilter);
-    breathFilter.connect(this.analyser);
+    this.noiseGain.connect(this.breathFilter);
+    this.breathFilter.connect(this.analyser);
     
     // Start noise
     this.noiseGenerator.start();
@@ -238,6 +256,9 @@ export class BinauralBeatGenerator {
     const createChirp = () => {
       const chirpOsc = this.audioContext!.createOscillator();
       const chirpGain = this.audioContext!.createGain();
+      
+      // Register for tracking (not using this.registerNode because they're temporary)
+      this.activeNodes.push(chirpOsc, chirpGain);
       
       chirpOsc.frequency.value = 2500; // 2.5kHz
       chirpGain.gain.value = 0;
@@ -269,6 +290,13 @@ export class BinauralBeatGenerator {
         chirpOsc.stop();
         chirpOsc.disconnect();
         chirpGain.disconnect();
+        
+        // Remove from active nodes array
+        const oscIndex = this.activeNodes.indexOf(chirpOsc);
+        if (oscIndex > -1) this.activeNodes.splice(oscIndex, 1);
+        
+        const gainIndex = this.activeNodes.indexOf(chirpGain);
+        if (gainIndex > -1) this.activeNodes.splice(gainIndex, 1);
       }, 300);
     };
     
@@ -279,93 +307,29 @@ export class BinauralBeatGenerator {
     this.chirpInterval = window.setInterval(createChirp, 10000);
   }
   
-  // Stop the binaural beat
+  // Properly stop and cleanup all audio nodes
   stop() {
+    console.log("Stopping all audio. Current preset:", this.currentPreset);
+    
     if (this.isPlaying) {
-      // Stop and disconnect oscillators
-      if (this.leftOscillator) {
-        this.leftOscillator.stop();
-        this.leftOscillator.disconnect();
-        this.leftOscillator = null;
-      }
-      
-      if (this.rightOscillator) {
-        this.rightOscillator.stop();
-        this.rightOscillator.disconnect();
-        this.rightOscillator = null;
-      }
-      
-      // Disconnect gain nodes
-      if (this.leftGain) {
-        this.leftGain.disconnect();
-        this.leftGain = null;
-      }
-      
-      if (this.rightGain) {
-        this.rightGain.disconnect();
-        this.rightGain = null;
-      }
-      
-      if (this.masterGain) {
-        this.masterGain.disconnect();
-        this.masterGain = null;
-      }
-      
-      // Stop and disconnect alien effects
-      if (this.schumann) {
-        this.schumann.stop();
-        this.schumann.disconnect();
-        this.schumann = null;
-      }
-      
-      if (this.schumannGain) {
-        this.schumannGain.disconnect();
-        this.schumannGain = null;
-      }
-      
-      if (this.harmonicOscillator) {
-        this.harmonicOscillator.stop();
-        this.harmonicOscillator.disconnect();
-        this.harmonicOscillator = null;
-      }
-      
-      if (this.harmonicGain) {
-        this.harmonicGain.disconnect();
-        this.harmonicGain = null;
-      }
-      
-      if (this.ambientPadOscillator) {
-        this.ambientPadOscillator.stop();
-        this.ambientPadOscillator.disconnect();
-        this.ambientPadOscillator = null;
-      }
-      
-      if (this.ambientPadGain) {
-        this.ambientPadGain.disconnect();
-        this.ambientPadGain = null;
-      }
-      
-      if (this.ultrasonicOscillator) {
-        this.ultrasonicOscillator.stop();
-        this.ultrasonicOscillator.disconnect();
-        this.ultrasonicOscillator = null;
-      }
-      
-      if (this.ultrasonicGain) {
-        this.ultrasonicGain.disconnect();
-        this.ultrasonicGain = null;
-      }
+      // Stop main oscillators
+      this.stopOscillator(this.leftOscillator);
+      this.stopOscillator(this.rightOscillator);
+      this.stopOscillator(this.schumann);
+      this.stopOscillator(this.schumannLFO);
+      this.stopOscillator(this.harmonicOscillator);
+      this.stopOscillator(this.ambientPadOscillator);
+      this.stopOscillator(this.ultrasonicOscillator);
       
       // Stop noise generator
       if (this.noiseGenerator) {
-        this.noiseGenerator.stop();
-        this.noiseGenerator.disconnect();
+        try {
+          this.noiseGenerator.stop();
+          this.noiseGenerator.disconnect();
+        } catch (e) {
+          console.warn("Error stopping noise generator:", e);
+        }
         this.noiseGenerator = null;
-      }
-      
-      if (this.noiseGain) {
-        this.noiseGain.disconnect();
-        this.noiseGain = null;
       }
       
       // Clear chirp interval
@@ -374,19 +338,102 @@ export class BinauralBeatGenerator {
         this.chirpInterval = null;
       }
       
+      // Clean up all gains
+      this.disconnectNode(this.leftGain);
+      this.disconnectNode(this.rightGain);
+      this.disconnectNode(this.masterGain);
+      this.disconnectNode(this.schumannGain);
+      this.disconnectNode(this.schumannLFOGain);
+      this.disconnectNode(this.harmonicGain);
+      this.disconnectNode(this.ambientPadGain);
+      this.disconnectNode(this.ultrasonicGain);
+      this.disconnectNode(this.noiseGain);
+      this.disconnectNode(this.breathFilter);
+      
+      // Disconnect any remaining tracked nodes
+      this.cleanupRemainingNodes();
+      
+      // Reset variables
+      this.leftOscillator = null;
+      this.rightOscillator = null;
+      this.leftGain = null;
+      this.rightGain = null;
+      this.masterGain = null;
+      this.stereoPanner = null;
+      this.schumann = null;
+      this.schumannGain = null;
+      this.schumannLFO = null;
+      this.schumannLFOGain = null;
+      this.harmonicOscillator = null;
+      this.harmonicGain = null;
+      this.ambientPadOscillator = null;
+      this.ambientPadGain = null;
+      this.ultrasonicOscillator = null;
+      this.ultrasonicGain = null;
+      this.noiseGain = null;
+      this.breathFilter = null;
+      
       this.isPlaying = false;
     }
   }
   
-  // Set volume
+  // Helper method to safely stop oscillators
+  private stopOscillator(osc: OscillatorNode | null) {
+    if (osc) {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (e) {
+        console.warn("Error stopping oscillator:", e);
+      }
+    }
+  }
+  
+  // Helper method to safely disconnect nodes
+  private disconnectNode(node: AudioNode | null) {
+    if (node) {
+      try {
+        node.disconnect();
+      } catch (e) {
+        console.warn("Error disconnecting node:", e);
+      }
+    }
+  }
+  
+  // Clean up any remaining tracked nodes
+  private cleanupRemainingNodes() {
+    console.log(`Cleaning up ${this.activeNodes.length} remaining audio nodes`);
+    
+    while (this.activeNodes.length > 0) {
+      const node = this.activeNodes.pop();
+      if (node) {
+        try {
+          // Check if it's an oscillator
+          if ('stop' in node && typeof node.stop === 'function') {
+            (node as OscillatorNode).stop();
+          }
+          node.disconnect();
+        } catch (e) {
+          console.warn("Error during cleanup of node:", e);
+        }
+      }
+    }
+  }
+  
+  // Set volume for all active gain nodes
   setVolume(volume: number) {
+    console.log(`Setting volume to ${volume}, current preset: ${this.currentPreset}`);
+    
     this.baseVolume = volume;
+    
+    // Update master gain
     if (this.masterGain) {
       this.masterGain.gain.value = volume;
     }
     
+    // Update all individual gains
     if (this.noiseGain) {
-      this.noiseGain.gain.value = volume * 0.2; // Keep noise quieter than main tones
+      this.noiseGain.gain.value = volume * 0.2;
     }
     
     if (this.schumannGain) {
@@ -403,6 +450,14 @@ export class BinauralBeatGenerator {
     
     if (this.ultrasonicGain) {
       this.ultrasonicGain.gain.value = volume * 0.05;
+    }
+    
+    if (this.leftGain) {
+      this.leftGain.gain.value = volume;
+    }
+    
+    if (this.rightGain) {
+      this.rightGain.gain.value = volume;
     }
   }
   
@@ -462,10 +517,13 @@ export class BinauralBeatGenerator {
   // Clean up on component unmount
   cleanup() {
     this.stop();
+    this.cleanupRemainingNodes();
+    
     if (this.analyser) {
       this.analyser.disconnect();
       this.analyser = null;
     }
+    
     if (this.audioContext) {
       this.audioContext.close();
       this.audioContext = null;
