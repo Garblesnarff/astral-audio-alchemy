@@ -50,6 +50,7 @@ export class AudioPlayer implements IAudioPlayer {
       
       console.log(`Stop operation completed, now starting ${preset} preset`);
       
+      // Update state
       this.state.isPlaying = true;
       this.state.currentPreset = preset;
       this.state.baseFrequency = baseFreq;

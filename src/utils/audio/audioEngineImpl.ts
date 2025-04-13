@@ -19,7 +19,10 @@ class AudioEngine {
    * Initialize the audio context
    */
   public initialize(): boolean {
-    return this.contextManager.initialize();
+    // Make sure we have a clean initialization
+    const result = this.contextManager.initialize();
+    console.log(`Audio engine initialized: ${result}`);
+    return result;
   }
 
   /**
@@ -40,7 +43,18 @@ class AudioEngine {
    * Start audio playback with the specified parameters
    */
   public start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'custom'): void {
-    this.player.start(baseFreq, beatFreq, volume, preset);
+    console.log(`AudioEngine: Starting playback - baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}, preset: ${preset}`);
+    
+    // Make sure audio context is running
+    const ctx = this.contextManager.getAudioContext();
+    if (ctx && ctx.state !== 'running') {
+      console.log('Resuming audio context before starting playback');
+      ctx.resume().then(() => {
+        this.player.start(baseFreq, beatFreq, volume, preset);
+      });
+    } else {
+      this.player.start(baseFreq, beatFreq, volume, preset);
+    }
   }
   
   /**
