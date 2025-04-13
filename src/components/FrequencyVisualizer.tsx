@@ -1,6 +1,5 @@
-
 import React, { useEffect, useRef } from 'react';
-import audioEngine from '@/utils/audioEngine';
+import audioEngine from '@/utils/audio';
 
 interface FrequencyVisualizerProps {
   isPlaying: boolean;
