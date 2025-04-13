@@ -1,5 +1,6 @@
 
-// Re-export the AudioEngine as the default export to maintain consistent API
+// This file provides a consistent import path for the audio engine
+// It re-exports the singleton instance from AudioEngine.ts
 
 import audioEngine from './AudioEngine';
 
