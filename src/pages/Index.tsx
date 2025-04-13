@@ -35,6 +35,14 @@ const Index = () => {
   const handleSelectPreset = useCallback((presetId: string) => {
     const preset = getPresetById(presetId);
     if (preset) {
+      console.log(`Selecting preset: ${presetId}, stopping any current audio first`);
+      
+      // Important: Always stop any currently playing audio before changing preset
+      const wasPlaying = isPlaying;
+      if (isPlaying) {
+        audioEngine.stop();
+      }
+      
       setSelectedPreset(presetId);
       setBaseFrequency(preset.baseFrequency);
       setBeatFrequency(preset.beatFrequency);
@@ -45,19 +53,25 @@ const Index = () => {
         duration: 3000,
       });
       
-      if (isPlaying) {
-        audioEngine.setBaseFrequency(preset.baseFrequency);
-        audioEngine.setBeatFrequency(preset.beatFrequency);
+      // If already playing, restart with new preset
+      if (wasPlaying) {
+        console.log(`Restarting audio with new preset: ${presetId}`);
+        // Add a small delay to ensure cleanup is complete
+        setTimeout(() => {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
+        }, 100);
       }
     }
-  }, [isPlaying, toast]);
+  }, [isPlaying, toast, volume]);
   
   // Toggle play/pause
   const togglePlay = useCallback(() => {
     if (isPlaying) {
+      console.log("Stopping audio from togglePlay");
       audioEngine.stop();
       setIsPlaying(false);
     } else {
+      console.log("Starting audio from togglePlay");
       if (selectedPreset) {
         const preset = getPresetById(selectedPreset);
         if (preset) {
@@ -87,17 +101,43 @@ const Index = () => {
   
   // Handle base frequency change
   const handleBaseFrequencyChange = useCallback((value: number) => {
+    // Always stop first for clean slate
+    const wasPlaying = isPlaying;
+    if (isPlaying) {
+      audioEngine.stop();
+    }
+    
     setBaseFrequency(value);
-    audioEngine.setBaseFrequency(value);
     setSelectedPreset(null);
-  }, []);
+    
+    // Restart if was playing
+    if (wasPlaying) {
+      setTimeout(() => {
+        audioEngine.start(value, beatFrequency, volume);
+        setIsPlaying(true);
+      }, 100);
+    }
+  }, [beatFrequency, isPlaying, volume]);
   
   // Handle beat frequency change
   const handleBeatFrequencyChange = useCallback((value: number) => {
+    // Always stop first for clean slate
+    const wasPlaying = isPlaying;
+    if (isPlaying) {
+      audioEngine.stop();
+    }
+    
     setBeatFrequency(value);
-    audioEngine.setBeatFrequency(value);
     setSelectedPreset(null);
-  }, []);
+    
+    // Restart if was playing
+    if (wasPlaying) {
+      setTimeout(() => {
+        audioEngine.start(baseFrequency, value, volume);
+        setIsPlaying(true);
+      }, 100);
+    }
+  }, [baseFrequency, isPlaying, volume]);
   
   // Handle timer end
   const handleTimerEnd = useCallback(() => {
@@ -109,6 +149,21 @@ const Index = () => {
       duration: 3000,
     });
   }, [toast]);
+  
+  // Ensure UI state is in sync with audio engine
+  React.useEffect(() => {
+    const syncState = () => {
+      const engineIsPlaying = audioEngine.getIsPlaying();
+      if (isPlaying !== engineIsPlaying) {
+        console.log(`Syncing play state UI (${isPlaying}) with audio engine (${engineIsPlaying})`);
+        setIsPlaying(engineIsPlaying);
+      }
+    };
+    
+    // Check sync every 1 second
+    const intervalId = setInterval(syncState, 1000);
+    return () => clearInterval(intervalId);
+  }, [isPlaying]);
   
   return (
     <Layout>

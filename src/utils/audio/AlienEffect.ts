@@ -17,6 +17,7 @@ import { ChirpEffect } from './components/ChirpEffect';
 export class AlienEffect extends BaseAudioEffect {
   private effectComponents: IAudioEffectComponent[] = [];
   private volume: number = 0.5;
+  private safetyTimer: number | null = null;
   
   /**
    * Set up all the alien effects
@@ -45,6 +46,15 @@ export class AlienEffect extends BaseAudioEffect {
     this.effectComponents.forEach(component => {
       component.setup(options);
     });
+    
+    // Setup a safety timer to ensure cleanup even if stop() is never called
+    // This is an extra safeguard
+    this.safetyTimer = window.setTimeout(() => {
+      console.warn("AlienEffect: Safety timer triggered, performing cleanup");
+      this.stop();
+    }, 60 * 60 * 1000); // 1 hour max
+    
+    this.registerTimeout(this.safetyTimer);
   }
   
   /**
@@ -69,16 +79,30 @@ export class AlienEffect extends BaseAudioEffect {
   public stop(): void {
     console.log("Stopping all alien effects");
     
-    // Stop all components
-    this.effectComponents.forEach(component => {
-      component.stop();
+    // Stop all components first
+    const componentsList = [...this.effectComponents]; // Create a copy
+    this.effectComponents = []; // Clear the list first to prevent recursive cleanup issues
+    
+    // Stop each component individually
+    componentsList.forEach(component => {
+      try {
+        component.stop();
+      } catch (e) {
+        console.warn("Error stopping alien effect component:", e);
+      }
     });
+    
+    // Clear the safety timer if it exists
+    if (this.safetyTimer) {
+      clearTimeout(this.safetyTimer);
+      this.safetyTimer = null;
+    }
     
     // Clean up all nodes and timers using the parent class method
     this.cleanup();
     
-    // Clear components list
-    this.effectComponents = [];
+    // Schedule a delayed final cleanup to catch any missed nodes
+    this.scheduleDelayedCleanup();
     
     this.isPlaying = false;
   }

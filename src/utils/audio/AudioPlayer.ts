@@ -17,6 +17,8 @@ export class AudioPlayer implements IAudioPlayer {
   private beatFrequency = 10;
   private volume = 0.5;
   private currentPreset = '';
+  private startInProgress = false;
+  private stopInProgress = false;
 
   constructor(contextManager: AudioContextManager) {
     this.contextManager = contextManager;
@@ -34,37 +36,50 @@ export class AudioPlayer implements IAudioPlayer {
       return;
     }
     
+    // Prevent multiple simultaneous starts
+    if (this.startInProgress) {
+      console.warn('Start operation already in progress, skipping');
+      return;
+    }
+    
+    this.startInProgress = true;
+    
     console.log(`Starting with preset: ${preset}, baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}`);
     
     // Make sure all previous audio is fully stopped
     this.stop();
     
-    this.isPlaying = true;
-    this.currentPreset = preset;
-    this.baseFrequency = baseFreq;
-    this.beatFrequency = beatFreq;
-    this.volume = volume;
+    // Set a timeout to ensure the previous stop operation has time to complete
+    setTimeout(() => {
+      this.isPlaying = true;
+      this.currentPreset = preset;
+      this.baseFrequency = baseFreq;
+      this.beatFrequency = beatFreq;
+      this.volume = volume;
 
-    // Set master volume
-    this.contextManager.setMasterVolume(volume);
+      // Set master volume
+      this.contextManager.setMasterVolume(volume);
 
-    // Create options object
-    const options: AudioEffectOptions = {
-      baseFrequency: baseFreq,
-      beatFrequency: beatFreq,
-      volume
-    };
+      // Create options object
+      const options: AudioEffectOptions = {
+        baseFrequency: baseFreq,
+        beatFrequency: beatFreq,
+        volume
+      };
 
-    // Initialize and set up the binaural oscillator
-    this.binauralOscillator = new BinauralOscillator(audioContext, analyser);
-    this.binauralOscillator.setup(options);
-    
-    // For the alien summoning preset, add the special effects
-    if (preset === 'alien') {
-      console.log("Setting up alien effects");
-      this.alienEffect = new AlienEffect(audioContext, analyser);
-      this.alienEffect.setup(options);
-    }
+      // Initialize and set up the binaural oscillator
+      this.binauralOscillator = new BinauralOscillator(audioContext, analyser);
+      this.binauralOscillator.setup(options);
+      
+      // For the alien summoning preset, add the special effects
+      if (preset === 'alien') {
+        console.log("Setting up alien effects");
+        this.alienEffect = new AlienEffect(audioContext, analyser);
+        this.alienEffect.setup(options);
+      }
+      
+      this.startInProgress = false;
+    }, 300); // Wait 300ms to ensure cleanup is complete
   }
   
   /**
@@ -73,22 +88,57 @@ export class AudioPlayer implements IAudioPlayer {
   public stop(): void {
     console.log("Stopping all audio. Current preset:", this.currentPreset);
     
+    // If already in the process of stopping, don't do it again
+    if (this.stopInProgress) {
+      console.warn('Stop operation already in progress, skipping');
+      return;
+    }
+    
+    this.stopInProgress = true;
+    
+    // Record if we need to clean up the alien effect
+    const hadAlienEffect = this.alienEffect !== null;
+    
     if (this.isPlaying) {
       // Stop binaural oscillator
       if (this.binauralOscillator) {
-        this.binauralOscillator.stop();
+        try {
+          this.binauralOscillator.stop();
+        } catch (e) {
+          console.warn("Error stopping binaural oscillator:", e);
+        }
         this.binauralOscillator = null;
       }
       
       // Stop alien effects
       if (this.alienEffect) {
-        this.alienEffect.stop();
+        try {
+          this.alienEffect.stop();
+        } catch (e) {
+          console.warn("Error stopping alien effect:", e);
+        }
         this.alienEffect = null;
       }
       
       this.isPlaying = false;
       this.currentPreset = '';
     }
+    
+    // Set a timeout to verify cleanup was successful
+    setTimeout(() => {
+      // Double check the alien effect was cleared, especially important
+      if (hadAlienEffect && this.alienEffect !== null) {
+        console.warn("AlienEffect still exists after cleanup timeout, forcing cleanup");
+        try {
+          this.alienEffect.stop();
+        } catch (e) {
+          console.error("Error during forced alien effect cleanup:", e);
+        }
+        this.alienEffect = null;
+      }
+      
+      this.stopInProgress = false;
+    }, 500);
   }
   
   /**
