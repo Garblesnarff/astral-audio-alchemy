@@ -111,7 +111,8 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         />
       ))}
       
-      <style jsx>{`
+      <style>
+        {`
         @keyframes wave {
           0%, 100% {
             transform: scaleY(1);
@@ -146,7 +147,8 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         .alien-waveform-bar.animate-wave {
           animation: alien-wave 3s infinite ease-in-out;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
