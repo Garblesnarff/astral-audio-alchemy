@@ -22,6 +22,21 @@ class AudioEngine {
     // Make sure we have a clean initialization
     const result = this.contextManager.initialize();
     console.log(`Audio engine initialized: ${result}`);
+    
+    // Additional validation
+    const context = this.contextManager.getAudioContext();
+    const masterGain = this.contextManager.getMasterGain();
+    const analyser = this.contextManager.getAnalyser();
+    
+    if (context && masterGain && analyser) {
+      console.log("Audio engine components successfully initialized:");
+      console.log(`- AudioContext state: ${context.state}`);
+      console.log(`- MasterGain available: ${masterGain !== null}`);
+      console.log(`- Analyser available: ${analyser !== null}`);
+    } else {
+      console.error("Audio engine initialization incomplete: Missing components");
+    }
+    
     return result;
   }
 
@@ -131,8 +146,10 @@ class AudioEngine {
    * Clean up on component unmount
    */
   public cleanup(): void {
+    console.log("AudioEngine: Cleaning up all audio resources");
     this.player.stop();
     this.contextManager.cleanup();
+    console.log("AudioEngine: Cleanup complete");
   }
 }
 

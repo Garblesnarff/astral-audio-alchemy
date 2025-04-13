@@ -1,3 +1,4 @@
+
 import { isOscillatorNode, isAudioBufferSourceNode } from './types';
 
 /**
@@ -12,19 +13,25 @@ export abstract class BaseAudioEffect {
   protected masterGain: GainNode | null = null;
   protected analyser: AnalyserNode | null;
   protected cleanupTimeout: number | null = null;
+  protected mainMasterGain: GainNode | null = null;
 
-  constructor(audioContext: AudioContext | null, analyser: AnalyserNode | null) {
+  constructor(audioContext: AudioContext | null, analyser: AnalyserNode | null, mainMasterGain: GainNode | null = null) {
     this.audioContext = audioContext;
     this.analyser = analyser;
+    this.mainMasterGain = mainMasterGain;
     
     // Create master gain node for this effect
-    if (this.audioContext && this.analyser) {
+    if (this.audioContext) {
       this.masterGain = this.registerNode(this.audioContext.createGain());
       this.masterGain.gain.value = 1;
       
-      // FIXED: We only connect to the main AudioContextManager's masterGain
-      // which already has the proper routing to analyser and destination
-      console.log("BaseAudioEffect: Initialized with corrected audio routing");
+      // CRITICAL FIX: Connect to the main master gain from AudioContextManager
+      if (this.mainMasterGain) {
+        console.log("BaseAudioEffect: Connecting effect masterGain to AudioContextManager masterGain");
+        this.masterGain.connect(this.mainMasterGain);
+      } else {
+        console.error("BaseAudioEffect: Main masterGain not provided, audio routing incomplete!");
+      }
     }
   }
 
@@ -178,6 +185,7 @@ export abstract class BaseAudioEffect {
   public updateVolume(volume: number): void {
     if (this.masterGain) {
       this.masterGain.gain.value = volume;
+      console.log(`${this.constructor.name}: Volume updated to ${volume}`);
     }
   }
   

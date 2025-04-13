@@ -1,3 +1,4 @@
+
 import { IAudioContextManager } from './types';
 
 /**
@@ -30,15 +31,20 @@ export class AudioContextManager implements IAudioContextManager {
         this.masterGain = this.audioContext.createGain();
         this.masterGain.gain.value = 0.5; // Default volume
         
-        // FIXED: Create a proper audio routing chain:
-        // 1. Connect analyser to destination directly (for visualization)
-        this.analyser.connect(this.audioContext.destination);
+        // CORRECTED AUDIO ROUTING CHAIN:
+        // The correct flow should be:
+        // Effect's masterGain -> AudioContextManager's masterGain -> Analyser -> Destination
         
-        // 2. Connect master gain to analyser (for both audio and visualization)
+        // 1. Connect analyser to destination
+        this.analyser.connect(this.audioContext.destination);
+        console.log("AudioContextManager: Analyser connected to destination");
+        
+        // 2. Connect master gain to analyser
         this.masterGain.connect(this.analyser);
+        console.log("AudioContextManager: MasterGain connected to analyser");
         
         console.log("Audio context initialized successfully with state:", this.audioContext.state);
-        console.log("Audio routing chain FIXED: Effects -> MasterGain -> Analyser -> Destination");
+        console.log("Audio routing chain established: Effect's masterGain -> AudioContextManager's masterGain -> Analyser -> Destination");
         
         // Resume context if it's suspended (autoplay policies in some browsers)
         if (this.audioContext.state === 'suspended') {
@@ -123,6 +129,7 @@ export class AudioContextManager implements IAudioContextManager {
     if (this.masterGain) {
       try {
         this.masterGain.disconnect();
+        console.log("AudioContextManager: MasterGain disconnected");
       } catch (e) {
         console.warn("Error disconnecting master gain:", e);
       }
@@ -132,6 +139,7 @@ export class AudioContextManager implements IAudioContextManager {
     if (this.analyser) {
       try {
         this.analyser.disconnect();
+        console.log("AudioContextManager: Analyser disconnected");
       } catch (e) {
         console.warn("Error disconnecting analyser:", e);
       }
@@ -141,6 +149,7 @@ export class AudioContextManager implements IAudioContextManager {
     if (this.audioContext) {
       try {
         this.audioContext.close();
+        console.log("AudioContextManager: AudioContext closed");
       } catch (e) {
         console.warn("Error closing audio context:", e);
       }

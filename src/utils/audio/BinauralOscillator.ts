@@ -40,36 +40,57 @@ export class BinauralOscillator extends BaseAudioEffect {
       // Create oscillators
       this.leftOscillator = this.registerNode(this.audioContext.createOscillator());
       this.rightOscillator = this.registerNode(this.audioContext.createOscillator());
+      console.log("BinauralOscillator: Created left and right oscillators");
       
       // Create gain nodes
       this.leftGain = this.registerNode(this.audioContext.createGain());
       this.rightGain = this.registerNode(this.audioContext.createGain());
+      console.log("BinauralOscillator: Created left and right gain nodes");
       
       // Create channel merger for stereo effect
       this.merger = this.registerNode(this.audioContext.createChannelMerger(2));
+      console.log("BinauralOscillator: Created channel merger for stereo output");
       
       // Set frequencies for left and right ear
       this.leftOscillator.frequency.value = this.baseFrequency;
       this.rightOscillator.frequency.value = this.baseFrequency + this.beatFrequency;
+      console.log(`BinauralOscillator: Left oscillator freq: ${this.baseFrequency}Hz, Right oscillator freq: ${this.baseFrequency + this.beatFrequency}Hz`);
       
       // Set volume
       this.leftGain.gain.value = this.volume;
       this.rightGain.gain.value = this.volume;
+      console.log(`BinauralOscillator: Set volume to ${this.volume}`);
       
       // Connect oscillators to their respective gain nodes
       this.leftOscillator.connect(this.leftGain);
       this.rightOscillator.connect(this.rightGain);
+      console.log("BinauralOscillator: Connected oscillators to gain nodes");
       
       // Connect gains to merger for proper stereo effect
       this.leftGain.connect(this.merger, 0, 0);  // Connect to left channel
       this.rightGain.connect(this.merger, 0, 1); // Connect to right channel
+      console.log("BinauralOscillator: Connected gain nodes to merger (left and right channels)");
       
-      // FIXED: Connect merger to master gain, which is already properly connected in the audio chain
-      this.merger.connect(this.masterGain);
+      // Connection validation - Ensure merger is connected to masterGain
+      if (this.merger && this.masterGain) {
+        this.merger.connect(this.masterGain);
+        console.log("BinauralOscillator: Merger connected to effect's masterGain");
+        
+        // Validate that masterGain is properly connected to the audio chain
+        if (this.mainMasterGain) {
+          console.log("BinauralOscillator: VALIDATED - Effect's masterGain is connected to AudioContextManager's masterGain");
+          console.log("BinauralOscillator: Complete audio chain established: Oscillators -> Gains -> Merger -> Effect masterGain -> Main masterGain -> Analyser -> Destination");
+        } else {
+          console.error("BinauralOscillator: Missing connection - Effect's masterGain not connected to main masterGain!");
+        }
+      } else {
+        console.error("BinauralOscillator: Missing nodes for connection");
+      }
       
       // Start oscillators
       this.leftOscillator.start();
       this.rightOscillator.start();
+      console.log("BinauralOscillator: Started both oscillators");
       
       console.log("Binaural oscillator setup complete and oscillators started");
       
@@ -169,6 +190,7 @@ export class BinauralOscillator extends BaseAudioEffect {
       if (this.leftOscillator) {
         try {
           this.leftOscillator.stop();
+          console.log("BinauralOscillator: Stopped left oscillator");
         } catch (e) {
           console.warn("Error stopping left oscillator:", e);
         }
@@ -177,6 +199,7 @@ export class BinauralOscillator extends BaseAudioEffect {
       if (this.rightOscillator) {
         try {
           this.rightOscillator.stop();
+          console.log("BinauralOscillator: Stopped right oscillator");
         } catch (e) {
           console.warn("Error stopping right oscillator:", e);
         }
