@@ -21,13 +21,13 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         let height, delay, color;
         
         // Assign different patterns for different frequency components
-        if (i % 10 === 0) {
-          // Ultrasonic ping (17kHz)
+        if (i % 15 === 0) {
+          // 17kHz ultrasonic ping
           height = Math.random() * 80 + 20;
           delay = 0;
           color = 'bg-purple-500';
         } else if (i % 7 === 0) {
-          // 528 Hz harmonic
+          // 528 Hz harmonic (spiritual frequency)
           height = Math.random() * 60 + 15;
           delay = i % 3;
           color = 'bg-green-400';
@@ -41,8 +41,13 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
           height = Math.random() * 40 + 5;
           delay = i % 5;
           color = 'bg-amber-300';
+        } else if (i % 8 === 0) {
+          // 2.5kHz chirps
+          height = Math.random() * 65 + 15;
+          delay = i % 2;
+          color = 'bg-red-400';
         } else {
-          // Chirps and breath layer
+          // Breath layer
           height = Math.random() * 30 + 5;
           delay = i % 6;
           color = 'bg-primary';
