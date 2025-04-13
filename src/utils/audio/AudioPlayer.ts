@@ -28,9 +28,10 @@ export class AudioPlayer implements IAudioPlayer {
   public start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'custom'): void {
     const audioContext = this.contextManager.getAudioContext();
     const analyser = this.contextManager.getAnalyser();
+    const masterGain = this.contextManager.getMasterGain();
     
-    if (!audioContext || !analyser) {
-      console.error('Audio context not initialized');
+    if (!audioContext || !analyser || !masterGain) {
+      console.error('Audio context or essential nodes not initialized');
       return;
     }
     
@@ -68,13 +69,13 @@ export class AudioPlayer implements IAudioPlayer {
       };
 
       // Always initialize and set up the binaural oscillator for all presets
-      this.binauralOscillator = new BinauralOscillator(audioContext, analyser);
+      this.binauralOscillator = new BinauralOscillator(audioContext, analyser, masterGain);
       this.binauralOscillator.setup(options);
       
       // For the alien summoning preset, add the special effects
       if (preset === 'alien') {
         console.log("Setting up alien effects");
-        this.alienEffect = new AlienEffect(audioContext, analyser);
+        this.alienEffect = new AlienEffect(audioContext, analyser, masterGain);
         this.alienEffect.setup(options);
       }
       

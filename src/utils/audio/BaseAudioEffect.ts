@@ -25,12 +25,12 @@ export abstract class BaseAudioEffect {
       this.masterGain = this.registerNode(this.audioContext.createGain());
       this.masterGain.gain.value = 1;
       
-      // CRITICAL FIX: Connect to the main master gain from AudioContextManager
+      // Connect to the main master gain from AudioContextManager
       if (this.mainMasterGain) {
-        console.log("BaseAudioEffect: Connecting effect masterGain to AudioContextManager masterGain");
+        console.log(`${this.constructor.name}: Connecting effect masterGain to AudioContextManager masterGain`);
         this.masterGain.connect(this.mainMasterGain);
       } else {
-        console.error("BaseAudioEffect: Main masterGain not provided, audio routing incomplete!");
+        console.error(`${this.constructor.name}: Main masterGain not provided, audio routing incomplete!`);
       }
     }
   }

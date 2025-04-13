@@ -33,6 +33,7 @@ class AudioEngine {
       console.log(`- AudioContext state: ${context.state}`);
       console.log(`- MasterGain available: ${masterGain !== null}`);
       console.log(`- Analyser available: ${analyser !== null}`);
+      console.log("Audio routing chain: Effects -> Effect masterGain -> AudioContextManager masterGain -> Analyser -> Destination");
     } else {
       console.error("Audio engine initialization incomplete: Missing components");
     }
