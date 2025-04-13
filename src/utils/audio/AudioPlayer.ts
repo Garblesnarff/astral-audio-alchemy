@@ -1,79 +1,37 @@
 
+import { IAudioPlayer, AudioEffectOptions } from './types';
+import { AudioContextManager } from './AudioContextManager';
 import { BinauralOscillator } from './BinauralOscillator';
 import { AlienEffect } from './AlienEffect';
-import { AudioEffectOptions } from './types';
 
 /**
- * Main class to handle Web Audio API logic for binaural beats
+ * Class that handles audio playback
  */
-export class BinauralBeatGenerator {
-  private audioContext: AudioContext | null = null;
+export class AudioPlayer implements IAudioPlayer {
+  private contextManager: AudioContextManager;
   private binauralOscillator: BinauralOscillator | null = null;
   private alienEffect: AlienEffect | null = null;
-  private masterGain: GainNode | null = null;
-  private analyser: AnalyserNode | null = null;
+  
   private isPlaying = false;
   private baseFrequency = 200;
   private beatFrequency = 10;
   private volume = 0.5;
   private currentPreset = '';
-  private isAudioContextSuspended = false;
 
-  /**
-   * Initialize the audio context
-   */
-  public initialize(): boolean {
-    try {
-      // Create a new AudioContext or use the existing one if it's already created
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        
-        // Create analyzer node
-        this.analyser = this.audioContext.createAnalyser();
-        this.analyser.fftSize = 1024;
-        
-        // Create master gain node
-        this.masterGain = this.audioContext.createGain();
-        this.masterGain.gain.value = this.volume;
-        
-        // Connect master gain to audio context destination
-        this.masterGain.connect(this.audioContext.destination);
-        this.analyser.connect(this.masterGain);
-        
-        console.log("Audio context initialized successfully");
-      } else if (this.isAudioContextSuspended) {
-        this.resume();
-      }
-      
-      return true;
-    } catch (e) {
-      console.error('Web Audio API is not supported in this browser', e);
-      return false;
-    }
-  }
-
-  /**
-   * Get the audio context
-   */
-  public getAudioContext(): AudioContext | null {
-    return this.audioContext;
-  }
-
-  /**
-   * Get the analyser node
-   */
-  public getAnalyser(): AnalyserNode | null {
-    return this.analyser;
+  constructor(contextManager: AudioContextManager) {
+    this.contextManager = contextManager;
   }
 
   /**
    * Start audio playback with the specified parameters
    */
   public start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'custom'): void {
-    if (!this.audioContext) {
-      if (!this.initialize()) {
-        return;
-      }
+    const audioContext = this.contextManager.getAudioContext();
+    const analyser = this.contextManager.getAnalyser();
+    
+    if (!audioContext || !analyser) {
+      console.error('Audio context not initialized');
+      return;
     }
     
     console.log(`Starting with preset: ${preset}, baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}`);
@@ -88,9 +46,7 @@ export class BinauralBeatGenerator {
     this.volume = volume;
 
     // Set master volume
-    if (this.masterGain) {
-      this.masterGain.gain.value = volume;
-    }
+    this.contextManager.setMasterVolume(volume);
 
     // Create options object
     const options: AudioEffectOptions = {
@@ -100,13 +56,13 @@ export class BinauralBeatGenerator {
     };
 
     // Initialize and set up the binaural oscillator
-    this.binauralOscillator = new BinauralOscillator(this.audioContext, this.analyser);
+    this.binauralOscillator = new BinauralOscillator(audioContext, analyser);
     this.binauralOscillator.setup(options);
     
     // For the alien summoning preset, add the special effects
     if (preset === 'alien') {
       console.log("Setting up alien effects");
-      this.alienEffect = new AlienEffect(this.audioContext, this.analyser);
+      this.alienEffect = new AlienEffect(audioContext, analyser);
       this.alienEffect.setup(options);
     }
   }
@@ -144,9 +100,7 @@ export class BinauralBeatGenerator {
     this.volume = volume;
     
     // Update master gain volume
-    if (this.masterGain) {
-      this.masterGain.gain.value = volume;
-    }
+    this.contextManager.setMasterVolume(volume);
     
     // Update binaural oscillator volume
     if (this.binauralOscillator) {
@@ -206,50 +160,4 @@ export class BinauralBeatGenerator {
   public getBeatFrequency(): number {
     return this.beatFrequency;
   }
-  
-  /**
-   * Suspend audio context (for battery saving)
-   */
-  public suspend(): void {
-    if (this.audioContext && this.audioContext.state === 'running') {
-      this.audioContext.suspend();
-      this.isAudioContextSuspended = true;
-    }
-  }
-  
-  /**
-   * Resume audio context
-   */
-  public resume(): void {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
-      this.isAudioContextSuspended = false;
-    }
-  }
-  
-  /**
-   * Clean up on component unmount
-   */
-  public cleanup(): void {
-    this.stop();
-    
-    if (this.masterGain) {
-      this.masterGain.disconnect();
-      this.masterGain = null;
-    }
-    
-    if (this.analyser) {
-      this.analyser.disconnect();
-      this.analyser = null;
-    }
-    
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
-    }
-  }
 }
-
-// Create and export singleton instance
-const audioEngine = new BinauralBeatGenerator();
-export default audioEngine;

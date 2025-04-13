@@ -37,3 +37,30 @@ export interface IAudioEffectComponent {
   updateVolume(volume: number): void;
   stop(): void;
 }
+
+/**
+ * Interface for audio context manager
+ */
+export interface IAudioContextManager {
+  initialize(): boolean;
+  getAudioContext(): AudioContext | null;
+  getAnalyser(): AnalyserNode | null;
+  suspend(): void;
+  resume(): void;
+  cleanup(): void;
+}
+
+/**
+ * Interface for audio player
+ */
+export interface IAudioPlayer {
+  start(baseFreq: number, beatFreq: number, volume: number, preset?: string): void;
+  stop(): void;
+  setVolume(volume: number): void;
+  getIsPlaying(): boolean;
+  getCurrentPreset(): string;
+  setBaseFrequency(frequency: number): void;
+  setBeatFrequency(frequency: number): void;
+  getBaseFrequency(): number;
+  getBeatFrequency(): number;
+}
