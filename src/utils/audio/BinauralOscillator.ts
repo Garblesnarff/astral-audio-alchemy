@@ -1,4 +1,3 @@
-
 import { BaseAudioEffect } from './BaseAudioEffect';
 import { AudioEffectOptions } from './types';
 
@@ -11,9 +10,6 @@ export class BinauralOscillator extends BaseAudioEffect {
   private leftGain: GainNode | null = null;
   private rightGain: GainNode | null = null;
   private merger: ChannelMergerNode | null = null;
-  private baseFrequency: number = 200;
-  private beatFrequency: number = 10;
-  private volume: number = 0.5;
 
   /**
    * Set up the binaural oscillators
@@ -29,11 +25,6 @@ export class BinauralOscillator extends BaseAudioEffect {
     
     console.log(`Setting up binaural oscillator with baseFreq: ${options.baseFrequency}, beatFreq: ${options.beatFrequency}, volume: ${options.volume}`);
     
-    // Store the values for later reference
-    this.baseFrequency = options.baseFrequency;
-    this.beatFrequency = options.beatFrequency;
-    this.volume = options.volume;
-    
     try {
       // Create oscillators
       this.leftOscillator = this.registerNode(this.audioContext.createOscillator());
@@ -47,12 +38,12 @@ export class BinauralOscillator extends BaseAudioEffect {
       this.merger = this.registerNode(this.audioContext.createChannelMerger(2));
       
       // Set frequencies for left and right ear
-      this.leftOscillator.frequency.value = this.baseFrequency;
-      this.rightOscillator.frequency.value = this.baseFrequency + this.beatFrequency;
+      this.leftOscillator.frequency.value = options.baseFrequency;
+      this.rightOscillator.frequency.value = options.baseFrequency + options.beatFrequency;
       
       // Set volume
-      this.leftGain.gain.value = this.volume;
-      this.rightGain.gain.value = this.volume;
+      this.leftGain.gain.value = options.volume;
+      this.rightGain.gain.value = options.volume;
       
       // Connect oscillators to their respective gain nodes
       this.leftOscillator.connect(this.leftGain);

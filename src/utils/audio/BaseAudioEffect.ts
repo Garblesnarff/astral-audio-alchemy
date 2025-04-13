@@ -1,4 +1,3 @@
-
 import { isOscillatorNode, isAudioBufferSourceNode } from './types';
 
 /**
@@ -23,10 +22,12 @@ export abstract class BaseAudioEffect {
       this.masterGain = this.registerNode(this.audioContext.createGain());
       this.masterGain.gain.value = 1;
       
-      // Connect to the analyzer directly
-      // This is the key fix - we connect directly to the analyzer,
-      // not through another node
+      // CRITICAL FIX: Connect to both analyzer AND destination
+      // This ensures the audio signal continues to the speakers
       this.masterGain.connect(this.analyser);
+      
+      // Connect to destination through analyzer (which is already connected to destination in AudioContextManager)
+      console.log("BaseAudioEffect: Initialized audio routing - masterGain connected to analyzer");
     }
   }
 

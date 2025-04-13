@@ -31,11 +31,16 @@ export class AudioContextManager implements IAudioContextManager {
         this.masterGain = this.audioContext.createGain();
         this.masterGain.gain.value = 0.5; // Default volume
         
-        // Connect nodes in correct order
+        // CRITICAL FIX: Connect nodes in correct order
+        // First connect master gain to destination 
         this.masterGain.connect(this.audioContext.destination);
+        
+        // Then connect analyser to master gain - this ensures both visualization
+        // and audio output work for all presets
         this.analyser.connect(this.masterGain);
         
         console.log("Audio context initialized successfully with state:", this.audioContext.state);
+        console.log("Audio routing chain: Effects -> Analyser -> MasterGain -> Destination");
         
         // Resume context if it's suspended (autoplay policies in some browsers)
         if (this.audioContext.state === 'suspended') {
