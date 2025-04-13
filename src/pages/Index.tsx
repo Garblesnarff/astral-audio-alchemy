@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -23,12 +24,21 @@ const Index = () => {
   const { toast } = useToast();
   
   useEffect(() => {
-    audioEngine.initialize();
+    // Ensure audio context is initialized
+    const initSuccess = audioEngine.initialize();
+    
+    if (!initSuccess) {
+      toast({
+        title: "Audio Error",
+        description: "Could not initialize audio system. Please check browser compatibility.",
+        variant: "destructive",
+      });
+    }
     
     return () => {
       audioEngine.cleanup();
     };
-  }, []);
+  }, [toast]);
   
   const handleSelectPreset = useCallback((presetId: string) => {
     const preset = getPresetById(presetId);
@@ -44,35 +54,49 @@ const Index = () => {
       });
       
       if (isPlaying) {
-        audioEngine.setBaseFrequency(preset.baseFrequency);
-        audioEngine.setBeatFrequency(preset.beatFrequency);
+        // Stop current playback before changing settings
+        audioEngine.stop();
+        
+        // For alien preset, use the specialized setup
+        if (presetId === 'alien') {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, 'alien');
+        } else {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume);
+        }
+        setIsPlaying(true);
       }
     }
-  }, [isPlaying, toast]);
+  }, [isPlaying, toast, volume]);
   
   const togglePlay = useCallback(() => {
     if (isPlaying) {
       audioEngine.stop();
       setIsPlaying(false);
     } else {
+      // Make sure audio context is running
+      audioEngine.resume();
+      
       if (selectedPreset) {
         const preset = getPresetById(selectedPreset);
         if (preset) {
-          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, selectedPreset);
+          // Special handling for alien preset
+          if (selectedPreset === 'alien') {
+            audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, 'alien');
+            
+            toast({
+              title: "Alien Summoning Activated",
+              description: "Please ensure you have taken proper interdimensional precautions.",
+              variant: "destructive",
+              duration: 5000,
+            });
+          } else {
+            audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume);
+          }
         }
       } else {
         audioEngine.start(baseFrequency, beatFrequency, volume);
       }
       setIsPlaying(true);
-      
-      if (selectedPreset === 'alien') {
-        toast({
-          title: "Alien Summoning Activated",
-          description: "Please ensure you have taken proper interdimensional precautions.",
-          variant: "destructive",
-          duration: 5000,
-        });
-      }
     }
   }, [isPlaying, selectedPreset, baseFrequency, beatFrequency, volume, toast]);
   

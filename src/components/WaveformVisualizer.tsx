@@ -15,40 +15,39 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
     const totalBars = 60;
     
     if (preset === 'alien') {
-      // Special visualization for the alien preset
-      // Representing multiple frequencies with different colors
+      // Enhanced visualization for the alien preset matching the complex sound profile
       const newBars = Array.from({ length: totalBars }).map((_, i) => {
         let height, delay, color;
         
         // Assign different patterns for different frequency components
-        if (i % 15 === 0) {
+        if (i % 17 === 0) {
           // 17kHz ultrasonic ping
-          height = Math.random() * 80 + 20;
-          delay = 0;
+          height = Math.random() * 90 + 30;
+          delay = i % 2;
           color = 'bg-purple-500';
-        } else if (i % 7 === 0) {
+        } else if (i % 5 === 0) {
           // 528 Hz harmonic (spiritual frequency)
-          height = Math.random() * 60 + 15;
+          height = Math.random() * 65 + 20;
           delay = i % 3;
           color = 'bg-green-400';
-        } else if (i % 5 === 0) {
-          // Schumann resonance (7.83 Hz)
-          height = Math.random() * 70 + 10;
+        } else if (i % 7 === 0) {
+          // Schumann resonance (7.83 Hz via 100 Hz carrier)
+          height = Math.random() * 75 + 15;
           delay = i % 4;
           color = 'bg-blue-400';
         } else if (i % 3 === 0) {
           // 432 Hz ambient pad
-          height = Math.random() * 40 + 5;
+          height = Math.random() * 45 + 10;
           delay = i % 5;
           color = 'bg-amber-300';
-        } else if (i % 8 === 0) {
+        } else if (i % 10 === 0) {
           // 2.5kHz chirps
-          height = Math.random() * 65 + 15;
+          height = Math.random() * 70 + 20;
           delay = i % 2;
           color = 'bg-red-400';
         } else {
           // Breath layer
-          height = Math.random() * 30 + 5;
+          height = Math.random() * 35 + 5;
           delay = i % 6;
           color = 'bg-primary';
         }
