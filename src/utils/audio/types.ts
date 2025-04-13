@@ -28,3 +28,12 @@ export interface AudioEffectOptions {
   baseFrequency: number;
   beatFrequency: number;
 }
+
+/**
+ * Interface for audio effect components
+ */
+export interface IAudioEffectComponent {
+  setup(options: AudioEffectOptions): void;
+  updateVolume(volume: number): void;
+  stop(): void;
+}
