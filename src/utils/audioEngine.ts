@@ -56,8 +56,8 @@ export class BinauralBeatGenerator {
     return this.analyser;
   }
 
-  // Register an audio node for tracking (for cleanup)
-  private registerNode(node: AudioNode) {
+  // Register an audio node for tracking (for cleanup) - with generic type to maintain node type
+  private registerNode<T extends AudioNode>(node: T): T {
     this.activeNodes.push(node);
     return node;
   }
