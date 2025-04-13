@@ -1,9 +1,9 @@
 
 import { BaseAudioEffect } from './BaseAudioEffect';
-import { AudioEffectOptions, isOscillatorNode, isGainNode, isAudioBufferSourceNode } from './types';
+import { AudioEffectOptions } from './types';
 
 /**
- * Class that handles the special alien effects
+ * Class that handles the alien soundscape effects
  */
 export class AlienEffect extends BaseAudioEffect {
   private schumann: OscillatorNode | null = null;
@@ -18,28 +18,24 @@ export class AlienEffect extends BaseAudioEffect {
   private ultrasonicGain: GainNode | null = null;
   private noiseGenerator: AudioBufferSourceNode | null = null;
   private noiseGain: GainNode | null = null;
+  private breathLFO: OscillatorNode | null = null;
   private breathFilter: BiquadFilterNode | null = null;
   private chirpInterval: number | null = null;
   private volume: number = 0.5;
   private noiseVolume: number = 0.1;
   
-  constructor(audioContext: AudioContext | null, private analyser: AnalyserNode | null) {
-    super(audioContext);
-  }
-  
   /**
    * Set up all the alien effects
    */
   public setup(options: AudioEffectOptions): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.analyser || !this.masterGain) return;
     
     // Make sure we're starting clean
     this.stop();
     
+    console.log("Setting up alien effect with volume", options.volume);
     this.volume = options.volume;
     this.isPlaying = true;
-    
-    console.log("Adding alien effects");
     
     this.addSchumannResonance();
     this.addHarmonicTone();
@@ -53,7 +49,7 @@ export class AlienEffect extends BaseAudioEffect {
    * Add Schumann resonance effect
    */
   private addSchumannResonance(): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
     // Create Schumann resonance (7.83 Hz via modulation of 100 Hz base tone)
     this.schumann = this.registerNode(this.audioContext.createOscillator());
@@ -73,7 +69,7 @@ export class AlienEffect extends BaseAudioEffect {
     
     // Connect Schumann oscillator to the output
     this.schumann.connect(this.schumannGain);
-    this.schumannGain.connect(this.analyser);
+    this.schumannGain.connect(this.masterGain);
     
     // Start oscillators
     this.schumann.start();
@@ -84,7 +80,7 @@ export class AlienEffect extends BaseAudioEffect {
    * Add harmonic tone (528 Hz spiritual frequency)
    */
   private addHarmonicTone(): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
     this.harmonicOscillator = this.registerNode(this.audioContext.createOscillator());
     this.harmonicOscillator.frequency.value = 528; // 528 Hz spiritual frequency
@@ -93,7 +89,7 @@ export class AlienEffect extends BaseAudioEffect {
     
     // Connect harmonic oscillator
     this.harmonicOscillator.connect(this.harmonicGain);
-    this.harmonicGain.connect(this.analyser);
+    this.harmonicGain.connect(this.masterGain);
     this.harmonicOscillator.start();
   }
   
@@ -101,7 +97,7 @@ export class AlienEffect extends BaseAudioEffect {
    * Add ambient pad (432 Hz masking layer)
    */
   private addAmbientPad(): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
     this.ambientPadOscillator = this.registerNode(this.audioContext.createOscillator());
     this.ambientPadOscillator.frequency.value = 432; // 432 Hz "natural" frequency
@@ -111,7 +107,7 @@ export class AlienEffect extends BaseAudioEffect {
     
     // Connect ambient pad
     this.ambientPadOscillator.connect(this.ambientPadGain);
-    this.ambientPadGain.connect(this.analyser);
+    this.ambientPadGain.connect(this.masterGain);
     this.ambientPadOscillator.start();
   }
   
@@ -119,7 +115,7 @@ export class AlienEffect extends BaseAudioEffect {
    * Add ultrasonic ping (17 kHz)
    */
   private addUltrasonicPing(): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
     // 17 kHz ultrasonic ping (subtle, for "NHI tech-detection")
     // Note: Many people won't hear this, and many devices can't reproduce it
@@ -130,16 +126,17 @@ export class AlienEffect extends BaseAudioEffect {
     
     // Connect ultrasonic oscillator
     this.ultrasonicOscillator.connect(this.ultrasonicGain);
-    this.ultrasonicGain.connect(this.analyser);
+    this.ultrasonicGain.connect(this.masterGain);
     this.ultrasonicOscillator.start();
   }
   
   /**
-   * Add breath effect
+   * Add breath effect using LFO for modulation instead of scheduled events
    */
   private addBreathEffect(): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
+    // Create noise buffer
     const bufferSize = 2 * this.audioContext.sampleRate;
     const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -156,25 +153,17 @@ export class AlienEffect extends BaseAudioEffect {
     
     // Create gain node for noise with breath-like modulation
     this.noiseGain = this.registerNode(this.audioContext.createGain());
-    this.noiseGain.gain.value = 0; // Start silent
+    this.noiseGain.gain.value = 0; // Start at zero
     
-    // Create breath effect with gain automation
-    const breathRate = 0.15; // Breaths per second (slow breathing)
-    const now = this.audioContext.currentTime;
+    // Create LFO for breathing effect instead of scheduled events
+    this.breathLFO = this.registerNode(this.audioContext.createOscillator());
+    this.breathLFO.frequency.value = 0.15; // Breathing rate in Hz (about one breath every ~6.7 seconds)
+    const breathLFOGain = this.registerNode(this.audioContext.createGain());
+    breathLFOGain.gain.value = this.noiseVolume * this.volume;
     
-    // Schedule automatic gain changes to simulate breathing
-    for (let i = 0; i < 100; i++) { // Schedule many breaths ahead
-      const startTime = now + (i * (1 / breathRate));
-      // Inhale (gradually increase volume)
-      this.noiseGain.gain.setValueAtTime(0.01, startTime);
-      this.noiseGain.gain.exponentialRampToValueAtTime(
-        this.noiseVolume, startTime + (1 / breathRate) * 0.3
-      );
-      // Exhale (gradually decrease volume)
-      this.noiseGain.gain.exponentialRampToValueAtTime(
-        0.01, startTime + (1 / breathRate)
-      );
-    }
+    // Connect LFO to modulate noise gain
+    this.breathLFO.connect(breathLFOGain);
+    breathLFOGain.connect(this.noiseGain.gain);
     
     // Filter the noise to make it more organic
     this.breathFilter = this.registerNode(this.audioContext.createBiquadFilter());
@@ -182,37 +171,37 @@ export class AlienEffect extends BaseAudioEffect {
     this.breathFilter.frequency.value = 800; // Cut off higher frequencies
     this.breathFilter.Q.value = 0.5;
     
-    // Connect noise
+    // Connect noise chain to output
     this.noiseGenerator.connect(this.noiseGain);
     this.noiseGain.connect(this.breathFilter);
-    this.breathFilter.connect(this.analyser);
+    this.breathFilter.connect(this.masterGain);
     
-    // Start noise
+    // Start oscillators and noise
+    this.breathLFO.start();
     this.noiseGenerator.start();
   }
   
   /**
-   * Create chirping sounds
+   * Create chirping sounds using properly registered timeouts
    */
   private createChirps(): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
     const createChirp = () => {
-      const chirpOsc = this.audioContext!.createOscillator();
-      const chirpGain = this.audioContext!.createGain();
+      if (!this.audioContext || !this.masterGain || !this.isPlaying) return;
       
-      // Register for tracking (not using this.registerNode because they're temporary)
-      this.activeNodes.push(chirpOsc, chirpGain);
+      const chirpOsc = this.registerNode(this.audioContext.createOscillator());
+      const chirpGain = this.registerNode(this.audioContext.createGain());
       
       chirpOsc.frequency.value = 2500; // 2.5kHz
       chirpGain.gain.value = 0;
       
       chirpOsc.connect(chirpGain);
-      chirpGain.connect(this.analyser!);
+      chirpGain.connect(this.masterGain);
       
       // Create chirp envelope
       chirpOsc.start();
-      const now = this.audioContext!.currentTime;
+      const now = this.audioContext.currentTime;
       
       // Initial silent period
       chirpGain.gain.setValueAtTime(0, now);
@@ -229,34 +218,47 @@ export class AlienEffect extends BaseAudioEffect {
       // Decay phase
       chirpGain.gain.linearRampToValueAtTime(0, now + 0.3);
       
-      // Stop after chirp is done
-      setTimeout(() => {
-        chirpOsc.stop();
-        chirpOsc.disconnect();
-        chirpGain.disconnect();
-        
-        // Remove from active nodes array
-        const oscIndex = this.activeNodes.indexOf(chirpOsc);
-        if (oscIndex > -1) this.activeNodes.splice(oscIndex, 1);
-        
-        const gainIndex = this.activeNodes.indexOf(chirpGain);
-        if (gainIndex > -1) this.activeNodes.splice(gainIndex, 1);
-      }, 300);
+      // Stop after chirp is done - using registerTimeout to track timeouts
+      this.registerTimeout(window.setTimeout(() => {
+        try {
+          chirpOsc.stop();
+          chirpOsc.disconnect();
+          chirpGain.disconnect();
+          
+          // Remove from active nodes array
+          const oscIndex = this.activeNodes.indexOf(chirpOsc);
+          if (oscIndex > -1) this.activeNodes.splice(oscIndex, 1);
+          
+          const gainIndex = this.activeNodes.indexOf(chirpGain);
+          if (gainIndex > -1) this.activeNodes.splice(gainIndex, 1);
+        } catch (e) {
+          console.warn("Error cleaning up chirp:", e);
+        }
+      }, 400)); // Little extra time to ensure all audio processing is complete
     };
     
     // Create a chirp immediately
     createChirp();
     
-    // Create a chirp every 10 seconds
-    this.chirpInterval = window.setInterval(createChirp, 10000);
+    // Create a chirp every 10 seconds - using registerInterval for cleanup
+    this.chirpInterval = this.registerInterval(window.setInterval(() => {
+      if (this.isPlaying) {
+        createChirp();
+      }
+    }, 10000));
   }
   
   /**
    * Update volume of all components
    */
-  public updateVolume(volume: number): void {
+  public override updateVolume(volume: number): void {
+    console.log("AlienEffect: updating volume to", volume);
     this.volume = volume;
     
+    // Update master gain first (from parent class)
+    super.updateVolume(volume);
+    
+    // Update individual component volumes
     if (this.schumannGain) {
       this.schumannGain.gain.value = volume * 0.5;
     }
@@ -273,10 +275,7 @@ export class AlienEffect extends BaseAudioEffect {
       this.ultrasonicGain.gain.value = volume * 0.05;
     }
     
-    if (this.noiseGain) {
-      // Update noise breathing pattern
-      this.noiseVolume = volume * 0.2;
-    }
+    this.noiseVolume = volume * 0.2;
   }
   
   /**
@@ -285,43 +284,10 @@ export class AlienEffect extends BaseAudioEffect {
   public stop(): void {
     console.log("Stopping all alien effects");
     
-    // Stop Schumann resonance
-    this.stopOscillator(this.schumann);
-    this.stopOscillator(this.schumannLFO);
-    this.disconnectNode(this.schumannGain);
-    this.disconnectNode(this.schumannLFOGain);
+    // Clean up all nodes and timers using the parent class method
+    this.cleanup();
     
-    // Stop harmonic oscillator
-    this.stopOscillator(this.harmonicOscillator);
-    this.disconnectNode(this.harmonicGain);
-    
-    // Stop ambient pad
-    this.stopOscillator(this.ambientPadOscillator);
-    this.disconnectNode(this.ambientPadGain);
-    
-    // Stop ultrasonic oscillator
-    this.stopOscillator(this.ultrasonicOscillator);
-    this.disconnectNode(this.ultrasonicGain);
-    
-    // Stop noise generator
-    if (this.noiseGenerator) {
-      try {
-        this.noiseGenerator.stop();
-        this.noiseGenerator.disconnect();
-      } catch (e) {
-        console.warn("Error stopping noise generator:", e);
-      }
-    }
-    this.disconnectNode(this.noiseGain);
-    this.disconnectNode(this.breathFilter);
-    
-    // Clear chirp interval
-    if (this.chirpInterval) {
-      clearInterval(this.chirpInterval);
-      this.chirpInterval = null;
-    }
-    
-    // Reset variables
+    // Reset all references
     this.schumann = null;
     this.schumannGain = null;
     this.schumannLFO = null;
@@ -334,10 +300,9 @@ export class AlienEffect extends BaseAudioEffect {
     this.ultrasonicGain = null;
     this.noiseGenerator = null;
     this.noiseGain = null;
+    this.breathLFO = null;
     this.breathFilter = null;
-    
-    // Clean up any remaining nodes
-    this.cleanup();
+    this.chirpInterval = null;
     
     this.isPlaying = false;
   }

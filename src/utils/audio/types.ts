@@ -1,23 +1,30 @@
 
-// Common types used across the audio engine
-
-export interface AudioEffectOptions {
-  baseFrequency: number;
-  beatFrequency: number;
-  volume: number;
-}
-
-// Type guard to check if a node is an OscillatorNode
+/**
+ * Type guard for OscillatorNode
+ */
 export function isOscillatorNode(node: AudioNode): node is OscillatorNode {
-  return 'frequency' in node && 'type' in node;
+  return 'frequency' in node && 'stop' in node;
 }
 
-// Type guard to check if a node is a GainNode
+/**
+ * Type guard for GainNode
+ */
 export function isGainNode(node: AudioNode): node is GainNode {
   return 'gain' in node;
 }
 
-// Type guard to check if a node is an AudioBufferSourceNode
+/**
+ * Type guard for AudioBufferSourceNode
+ */
 export function isAudioBufferSourceNode(node: AudioNode): node is AudioBufferSourceNode {
-  return 'buffer' in node && 'loop' in node;
+  return 'buffer' in node && 'start' in node;
+}
+
+/**
+ * Configuration options for audio effects
+ */
+export interface AudioEffectOptions {
+  volume: number;
+  baseFrequency: number;
+  beatFrequency: number;
 }

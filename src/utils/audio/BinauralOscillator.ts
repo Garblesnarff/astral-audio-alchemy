@@ -3,41 +3,33 @@ import { BaseAudioEffect } from './BaseAudioEffect';
 import { AudioEffectOptions } from './types';
 
 /**
- * Class that handles the basic binaural beat oscillators
+ * Class for generating binaural beats
  */
 export class BinauralOscillator extends BaseAudioEffect {
   private leftOscillator: OscillatorNode | null = null;
   private rightOscillator: OscillatorNode | null = null;
   private leftGain: GainNode | null = null;
   private rightGain: GainNode | null = null;
-  private masterGain: GainNode | null = null;
   private stereoPanner: StereoPannerNode | null = null;
   private baseFrequency: number = 200;
   private beatFrequency: number = 10;
   private volume: number = 0.5;
-  
-  constructor(
-    audioContext: AudioContext | null,
-    private analyser: AnalyserNode | null
-  ) {
-    super(audioContext);
-  }
-  
+
   /**
    * Set up the binaural oscillators
    */
   public setup(options: AudioEffectOptions): void {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.masterGain) return;
     
-    // Make sure we're starting clean
+    // Make sure to stop any previous oscillators
     this.stop();
+    
+    console.log(`Setting up binaural oscillator with baseFreq: ${options.baseFrequency}, beatFreq: ${options.beatFrequency}, volume: ${options.volume}`);
     
     this.baseFrequency = options.baseFrequency;
     this.beatFrequency = options.beatFrequency;
     this.volume = options.volume;
     this.isPlaying = true;
-    
-    console.log(`Setting up oscillators with baseFreq: ${this.baseFrequency}, beatFreq: ${this.beatFrequency}`);
     
     // Create oscillators
     this.leftOscillator = this.registerNode(this.audioContext.createOscillator());
@@ -46,7 +38,6 @@ export class BinauralOscillator extends BaseAudioEffect {
     // Create gain nodes
     this.leftGain = this.registerNode(this.audioContext.createGain());
     this.rightGain = this.registerNode(this.audioContext.createGain());
-    this.masterGain = this.registerNode(this.audioContext.createGain());
     
     // Create stereo panner
     this.stereoPanner = this.registerNode(this.audioContext.createStereoPanner());
@@ -58,19 +49,18 @@ export class BinauralOscillator extends BaseAudioEffect {
     // Set volume
     this.leftGain.gain.value = this.volume;
     this.rightGain.gain.value = this.volume;
-    this.masterGain.gain.value = this.volume;
     
-    // Connect nodes
+    // Connect nodes for proper stereo separation
     this.leftOscillator.connect(this.leftGain);
     this.rightOscillator.connect(this.rightGain);
     
-    // Left channel (pan left)
-    this.leftGain.connect(this.masterGain);
+    // Create stereo effect by panning left and right channels
+    const merger = this.registerNode(this.audioContext.createChannelMerger(2));
+    this.leftGain.connect(merger, 0, 0); // Connect to left channel
+    this.rightGain.connect(merger, 0, 1); // Connect to right channel
     
-    // Right channel (pan right)
-    this.rightGain.connect(this.masterGain);
-    
-    this.masterGain.connect(this.analyser);
+    // Connect to master gain
+    merger.connect(this.masterGain);
     
     // Start oscillators
     this.leftOscillator.start();
@@ -78,7 +68,7 @@ export class BinauralOscillator extends BaseAudioEffect {
   }
   
   /**
-   * Set base frequency
+   * Update the base frequency
    */
   public setBaseFrequency(frequency: number): void {
     this.baseFrequency = frequency;
@@ -91,7 +81,7 @@ export class BinauralOscillator extends BaseAudioEffect {
   }
   
   /**
-   * Set beat frequency
+   * Update the beat frequency
    */
   public setBeatFrequency(frequency: number): void {
     this.beatFrequency = frequency;
@@ -101,25 +91,16 @@ export class BinauralOscillator extends BaseAudioEffect {
   }
   
   /**
-   * Get current base frequency
+   * Update the volume
    */
-  public getBaseFrequency(): number {
-    return this.baseFrequency;
-  }
-  
-  /**
-   * Get current beat frequency
-   */
-  public getBeatFrequency(): number {
-    return this.beatFrequency;
-  }
-  
-  /**
-   * Update volume
-   */
-  public updateVolume(volume: number): void {
+  public override updateVolume(volume: number): void {
+    console.log("BinauralOscillator: updating volume to", volume);
     this.volume = volume;
     
+    // Update master gain from parent class
+    super.updateVolume(volume);
+    
+    // Update individual gains
     if (this.leftGain) {
       this.leftGain.gain.value = volume;
     }
@@ -127,41 +108,23 @@ export class BinauralOscillator extends BaseAudioEffect {
     if (this.rightGain) {
       this.rightGain.gain.value = volume;
     }
-    
-    if (this.masterGain) {
-      this.masterGain.gain.value = volume;
-    }
   }
   
   /**
    * Stop all oscillators
    */
   public stop(): void {
-    // Log that we're stopping oscillators
     console.log("Stopping binaural oscillators");
     
-    // Stop oscillators
-    this.stopOscillator(this.leftOscillator);
-    this.stopOscillator(this.rightOscillator);
+    // Use the parent class method to clean up
+    this.cleanup();
     
-    // Disconnect gain nodes
-    this.disconnectNode(this.leftGain);
-    this.disconnectNode(this.rightGain);
-    this.disconnectNode(this.masterGain);
-    
-    // Disconnect stereo panner
-    this.disconnectNode(this.stereoPanner);
-    
-    // Reset variables
+    // Reset references
     this.leftOscillator = null;
+    this.rightGain = null;
     this.rightOscillator = null;
     this.leftGain = null;
-    this.rightGain = null;
-    this.masterGain = null;
     this.stereoPanner = null;
-    
-    // Cleanup remaining nodes
-    this.cleanup();
     
     this.isPlaying = false;
   }

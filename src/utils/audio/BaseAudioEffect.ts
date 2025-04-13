@@ -1,18 +1,30 @@
 
-import { isOscillatorNode, isGainNode, isAudioBufferSourceNode } from './types';
+import { isOscillatorNode, isAudioBufferSourceNode } from './types';
 
 /**
- * Base class for audio effects that handles common functionality
+ * Base class for audio effects
  */
 export abstract class BaseAudioEffect {
   protected audioContext: AudioContext | null = null;
   protected activeNodes: AudioNode[] = [];
+  protected activeTimeouts: number[] = [];
+  protected activeIntervals: number[] = [];
   protected isPlaying = false;
-  
-  constructor(audioContext: AudioContext | null) {
+  protected masterGain: GainNode | null = null;
+  protected analyser: AnalyserNode | null;
+
+  constructor(audioContext: AudioContext | null, analyser: AnalyserNode | null) {
     this.audioContext = audioContext;
+    this.analyser = analyser;
+    
+    // Create master gain node for this effect
+    if (this.audioContext && this.analyser) {
+      this.masterGain = this.registerNode(this.audioContext.createGain());
+      this.masterGain.gain.value = 1;
+      this.masterGain.connect(this.analyser);
+    }
   }
-  
+
   /**
    * Register an audio node for tracking (for cleanup)
    */
@@ -22,39 +34,40 @@ export abstract class BaseAudioEffect {
   }
   
   /**
-   * Helper method to safely stop oscillators
+   * Register a timeout ID for cleanup
    */
-  protected stopOscillator(osc: OscillatorNode | null) {
-    if (osc) {
-      try {
-        osc.stop();
-        osc.disconnect();
-      } catch (e) {
-        console.warn("Error stopping oscillator:", e);
-      }
-    }
+  protected registerTimeout(timeoutId: number): number {
+    this.activeTimeouts.push(timeoutId);
+    return timeoutId;
   }
   
   /**
-   * Helper method to safely disconnect nodes
+   * Register an interval ID for cleanup
    */
-  protected disconnectNode(node: AudioNode | null) {
-    if (node) {
-      try {
-        node.disconnect();
-      } catch (e) {
-        console.warn("Error disconnecting node:", e);
-      }
-    }
+  protected registerInterval(intervalId: number): number {
+    this.activeIntervals.push(intervalId);
+    return intervalId;
   }
-  
+
   /**
-   * Clean up all active nodes
+   * Clean up all audio nodes and timers
    */
-  public cleanup() {
-    console.log(`Cleaning up ${this.activeNodes.length} audio nodes`);
+  public cleanup(): void {
+    console.log(`${this.constructor.name}: Cleaning up ${this.activeNodes.length} audio nodes`);
     
-    // Iterate through all active nodes and disconnect/stop them
+    // Clear all timeouts
+    this.activeTimeouts.forEach(id => {
+      window.clearTimeout(id);
+    });
+    this.activeTimeouts = [];
+    
+    // Clear all intervals
+    this.activeIntervals.forEach(id => {
+      window.clearInterval(id);
+    });
+    this.activeIntervals = [];
+    
+    // Stop and disconnect all nodes
     for (const node of [...this.activeNodes]) {
       try {
         // Check node type and handle accordingly
@@ -75,13 +88,40 @@ export abstract class BaseAudioEffect {
         // Disconnect all nodes
         node.disconnect();
       } catch (e) {
-        console.warn("Error during cleanup of node:", e);
+        console.warn(`Error during cleanup of node in ${this.constructor.name}:`, e);
       }
     }
     
     // Clear the active nodes array
     this.activeNodes = [];
     this.isPlaying = false;
+  }
+  
+  /**
+   * Helper to safely stop oscillator nodes
+   */
+  protected stopOscillator(osc: OscillatorNode | null): void {
+    if (osc) {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (e) {
+        console.warn("Error stopping oscillator:", e);
+      }
+    }
+  }
+  
+  /**
+   * Helper to safely disconnect nodes
+   */
+  protected disconnectNode(node: AudioNode | null): void {
+    if (node) {
+      try {
+        node.disconnect();
+      } catch (e) {
+        console.warn("Error disconnecting node:", e);
+      }
+    }
   }
   
   /**
@@ -92,7 +132,16 @@ export abstract class BaseAudioEffect {
   }
   
   /**
-   * Abstract method that must be implemented by subclasses
+   * Update volume of the effect
+   */
+  public updateVolume(volume: number): void {
+    if (this.masterGain) {
+      this.masterGain.gain.value = volume;
+    }
+  }
+  
+  /**
+   * Stop the effect - must be implemented by subclasses
    */
   public abstract stop(): void;
 }

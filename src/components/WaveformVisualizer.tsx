@@ -10,15 +10,16 @@ interface WaveformVisualizerProps {
 const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, preset }) => {
   const [bars, setBars] = useState<Array<{ height: number; delay: number; color: string }>>([]);
   
+  // Reset and recreate bars when preset changes or playback changes
   useEffect(() => {
-    // Create random bar heights
+    // Create bars for visualization
     const totalBars = 60;
     const newBars = Array.from({ length: totalBars }).map((_, i) => {
       let height = Math.random() * 50 + 5;
       let delay = i % 5;
-      let color = '';
+      let color = 'rgba(99, 102, 241, 0.8)'; // Default color
       
-      // Special effects for the alien preset
+      // Special effects for alien preset
       if (preset === 'alien') {
         // Create a pattern - taller bars for ultrasonic/harmonic frequencies 
         if (i % 12 === 0) {
@@ -34,13 +35,10 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
           color = 'rgba(99, 102, 241, 0.8)'; // Base color for other frequencies
         }
         
-        // Every 10th bar gets a special delay to simulate the chirps
+        // Every 10th bar gets a special delay for the chirps
         if (i % 10 === 0) {
-          delay = 0; // No delay for chirp bars to make them stand out
+          delay = 0; // No delay for chirp bars
         }
-      } else {
-        // Default colors for non-alien presets
-        color = 'rgba(99, 102, 241, 0.8)';
       }
       
       return {
@@ -49,15 +47,21 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         color
       };
     });
+    
     setBars(newBars);
-  }, [preset]);
+  }, [preset, isPlaying]);
   
   // Effect to create the chirping visualization for the alien preset
   useEffect(() => {
     if (!isPlaying || preset !== 'alien') return;
     
+    // Clean up function in case component unmounts
+    let chirpIntervalId: number | null = null;
+    
     // Create a chirp effect every 10 seconds
-    const chirpInterval = setInterval(() => {
+    chirpIntervalId = window.setInterval(() => {
+      if (!isPlaying) return;
+      
       setBars(prevBars => {
         return prevBars.map((bar, index) => {
           // For every 6th bar, create a momentary height increase
@@ -73,23 +77,33 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
       });
       
       // Reset the bars to normal after 300ms (duration of chirp)
-      setTimeout(() => {
+      const resetTimeout = setTimeout(() => {
+        if (!isPlaying) return;
+        
         setBars(prevBars => {
           return prevBars.map((bar, index) => {
             if (index % 6 === 0) {
               return { 
                 ...bar, 
                 height: 40 + Math.random() * 15,
-                color: preset === 'alien' ? 'rgba(99, 102, 241, 0.8)' : bar.color
+                color: 'rgba(99, 102, 241, 0.8)'
               };
             }
             return bar;
           });
         });
       }, 300);
+      
+      return () => {
+        if (resetTimeout) clearTimeout(resetTimeout);
+      };
     }, 10000);
     
-    return () => clearInterval(chirpInterval);
+    return () => {
+      if (chirpIntervalId !== null) {
+        clearInterval(chirpIntervalId);
+      }
+    };
   }, [isPlaying, preset]);
   
   return (
@@ -122,30 +136,29 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
           }
         }
         
-        @keyframes alien-wave {
-          0%, 100% {
-            transform: scaleY(1) translateY(0);
-          }
-          25% {
-            transform: scaleY(1.1) translateY(-2px);
-          }
-          75% {
-            transform: scaleY(0.6) translateY(1px);
-          }
-        }
-        
-        .waveform-bar {
-          flex: 1;
-          max-width: 4px;
-          min-width: 2px;
-        }
-        
         .animate-wave {
           animation: wave 2s infinite ease-in-out;
         }
         
         .alien-waveform-bar.animate-wave {
           animation: alien-wave 3s infinite ease-in-out;
+        }
+        
+        @keyframes alien-wave {
+          0%, 100% {
+            transform: scaleY(1);
+          }
+          25% {
+            transform: scaleY(1.1);
+          }
+          75% {
+            transform: scaleY(0.6);
+          }
+        }
+        
+        .waveform-bar {
+          flex: 1;
+          max-width: 4px;
         }
         `}
       </style>
