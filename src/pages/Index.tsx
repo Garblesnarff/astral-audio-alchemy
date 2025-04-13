@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import WaveformVisualizer from '@/components/WaveformVisualizer';
 import PresetCard from '@/components/PresetCard';
 import FrequencyControls from '@/components/FrequencyControls';
 import Timer from '@/components/Timer';
-import audioEngine from '@/utils/audioEngine';
+import audioEngine from '@/utils/audio/audioEngine';
 import { Info, Play, Pause, Volume2, VolumeX, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 

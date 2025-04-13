@@ -1,5 +1,6 @@
+
 import React, { useEffect, useRef } from 'react';
-import audioEngine from '@/utils/audio/BinauralBeatGenerator';
+import audioEngine from '@/utils/audio/audioEngine';
 
 interface FrequencyVisualizerProps {
   isPlaying: boolean;
