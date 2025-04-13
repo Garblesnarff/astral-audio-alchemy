@@ -8,7 +8,7 @@ const WarningBanner = () => (
       <p className="font-medium">Important: Use headphones for binaural beats</p>
       <p className="text-muted-foreground mt-1">
         Binaural beats require stereo headphones to be effective. Keep volume at a comfortable level.
-        When using the Alien Summoning tone, always switch to a different preset by clicking "Play" after selecting.
+        Please allow a moment when switching between presets to ensure clean audio transitions.
       </p>
     </div>
   </div>

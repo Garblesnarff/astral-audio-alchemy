@@ -1,4 +1,3 @@
-
 import { IAudioPlayer, AudioEffectOptions } from './types';
 import { AudioContextManager } from './AudioContextManager';
 import { BinauralOscillator } from './BinauralOscillator';
@@ -19,6 +18,8 @@ export class AudioPlayer implements IAudioPlayer {
   private currentPreset = '';
   private startInProgress = false;
   private stopInProgress = false;
+  private stopCompleteCallback: (() => void) | null = null;
+  private delayedStartTimeoutId: number | null = null;
 
   constructor(contextManager: AudioContextManager) {
     this.contextManager = contextManager;
@@ -46,11 +47,18 @@ export class AudioPlayer implements IAudioPlayer {
     
     console.log(`Starting with preset: ${preset}, baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}`);
     
-    // Make sure all previous audio is fully stopped
-    this.stop();
+    // Cancel any pending delayed starts
+    if (this.delayedStartTimeoutId !== null) {
+      window.clearTimeout(this.delayedStartTimeoutId);
+      this.delayedStartTimeoutId = null;
+    }
     
-    // Set a timeout to ensure the previous stop operation has time to complete
-    setTimeout(() => {
+    // Make sure all previous audio is fully stopped
+    this.stop(() => {
+      // This callback will be executed after stop operation is fully completed
+      
+      console.log(`Stop operation completed, now starting ${preset} preset`);
+      
       this.isPlaying = true;
       this.currentPreset = preset;
       this.baseFrequency = baseFreq;
@@ -79,14 +87,21 @@ export class AudioPlayer implements IAudioPlayer {
       }
       
       this.startInProgress = false;
-    }, 300); // Wait 300ms to ensure cleanup is complete
+      
+      console.log(`${preset} preset started successfully`);
+    });
   }
   
   /**
    * Stop all audio
    */
-  public stop(): void {
+  public stop(callback?: () => void): void {
     console.log("Stopping all audio. Current preset:", this.currentPreset);
+    
+    // Store callback if provided
+    if (callback) {
+      this.stopCompleteCallback = callback;
+    }
     
     // If already in the process of stopping, don't do it again
     if (this.stopInProgress) {
@@ -124,7 +139,7 @@ export class AudioPlayer implements IAudioPlayer {
       this.currentPreset = '';
     }
     
-    // Set a timeout to verify cleanup was successful
+    // Set a timeout to verify cleanup was successful and execute callback
     setTimeout(() => {
       // Double check the alien effect was cleared, especially important
       if (hadAlienEffect && this.alienEffect !== null) {
@@ -138,7 +153,15 @@ export class AudioPlayer implements IAudioPlayer {
       }
       
       this.stopInProgress = false;
-    }, 500);
+      
+      // Execute callback if exists
+      if (this.stopCompleteCallback) {
+        this.stopCompleteCallback();
+        this.stopCompleteCallback = null;
+      }
+      
+      console.log("Audio stop operation completed successfully");
+    }, 300); // Reduced from 500ms to 300ms for faster transitions
   }
   
   /**

@@ -22,7 +22,7 @@ const VisualizerSection: React.FC<VisualizerSectionProps> = ({
       // Small delay to allow audio to start/stop first
       const timer = setTimeout(() => {
         setDisplayedPreset(selectedPreset);
-      }, 200);
+      }, 300); // Increased from 200ms to 300ms to match audio timing
       
       return () => clearTimeout(timer);
     }
