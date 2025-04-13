@@ -1,5 +1,5 @@
 
-import { isOscillatorNode } from './types';
+import { isOscillatorNode, isGainNode, isAudioBufferSourceNode } from './types';
 
 /**
  * Base class for audio effects that handles common functionality
@@ -54,21 +54,33 @@ export abstract class BaseAudioEffect {
   public cleanup() {
     console.log(`Cleaning up ${this.activeNodes.length} audio nodes`);
     
-    while (this.activeNodes.length > 0) {
-      const node = this.activeNodes.pop();
-      if (node) {
-        try {
-          // Check if it's an oscillator
-          if (isOscillatorNode(node)) {
+    // Iterate through all active nodes and disconnect/stop them
+    for (const node of [...this.activeNodes]) {
+      try {
+        // Check node type and handle accordingly
+        if (isOscillatorNode(node)) {
+          try {
             node.stop();
+          } catch (e) {
+            console.warn("Error stopping oscillator during cleanup:", e);
           }
-          node.disconnect();
-        } catch (e) {
-          console.warn("Error during cleanup of node:", e);
+        } else if (isAudioBufferSourceNode(node)) {
+          try {
+            node.stop();
+          } catch (e) {
+            console.warn("Error stopping audio buffer source during cleanup:", e);
+          }
         }
+        
+        // Disconnect all nodes
+        node.disconnect();
+      } catch (e) {
+        console.warn("Error during cleanup of node:", e);
       }
     }
     
+    // Clear the active nodes array
+    this.activeNodes = [];
     this.isPlaying = false;
   }
   

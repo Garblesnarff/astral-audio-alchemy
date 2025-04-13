@@ -9,6 +9,7 @@ import { AudioEffectOptions } from './types';
 export class BinauralBeatGenerator {
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
+  private masterGain: GainNode | null = null;
   private binauralOscillator: BinauralOscillator | null = null;
   private alienEffect: AlienEffect | null = null;
   private isPlaying = false;
@@ -25,7 +26,15 @@ export class BinauralBeatGenerator {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 1024;
-      this.analyser.connect(this.audioContext.destination);
+      
+      // Create master gain node for overall volume control
+      this.masterGain = this.audioContext.createGain();
+      this.masterGain.gain.value = this.baseVolume;
+      
+      // Connect master gain to destination
+      this.masterGain.connect(this.audioContext.destination);
+      this.analyser.connect(this.masterGain);
+      
       console.log("Audio context initialized successfully");
       return true;
     } catch (e) {
@@ -58,7 +67,7 @@ export class BinauralBeatGenerator {
     
     console.log(`Starting with preset: ${preset}, baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}`);
     
-    // Make sure we stop any previous sounds
+    // Make sure we stop any previous sounds completely
     this.stop();
     
     this.isPlaying = true;
@@ -66,6 +75,11 @@ export class BinauralBeatGenerator {
     this.baseFrequency = baseFreq;
     this.beatFrequency = beatFreq;
     this.baseVolume = volume;
+
+    // Set master volume
+    if (this.masterGain) {
+      this.masterGain.gain.value = volume;
+    }
 
     // Create options object
     const options: AudioEffectOptions = {
@@ -106,6 +120,7 @@ export class BinauralBeatGenerator {
       }
       
       this.isPlaying = false;
+      this.currentPreset = '';
     }
   }
   
@@ -116,6 +131,11 @@ export class BinauralBeatGenerator {
     console.log(`Setting volume to ${volume}, current preset: ${this.currentPreset}`);
     
     this.baseVolume = volume;
+    
+    // Update master gain volume
+    if (this.masterGain) {
+      this.masterGain.gain.value = volume;
+    }
     
     // Update binaural oscillator volume
     if (this.binauralOscillator) {
@@ -199,6 +219,11 @@ export class BinauralBeatGenerator {
    */
   cleanup(): void {
     this.stop();
+    
+    if (this.masterGain) {
+      this.masterGain.disconnect();
+      this.masterGain = null;
+    }
     
     if (this.analyser) {
       this.analyser.disconnect();

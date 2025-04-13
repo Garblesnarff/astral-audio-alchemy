@@ -1,6 +1,6 @@
 
 import { BaseAudioEffect } from './BaseAudioEffect';
-import { AudioEffectOptions } from './types';
+import { AudioEffectOptions, isOscillatorNode, isGainNode, isAudioBufferSourceNode } from './types';
 
 /**
  * Class that handles the special alien effects
@@ -32,6 +32,9 @@ export class AlienEffect extends BaseAudioEffect {
    */
   public setup(options: AudioEffectOptions): void {
     if (!this.audioContext || !this.analyser) return;
+    
+    // Make sure we're starting clean
+    this.stop();
     
     this.volume = options.volume;
     this.isPlaying = true;
@@ -280,6 +283,8 @@ export class AlienEffect extends BaseAudioEffect {
    * Stop all alien effects
    */
   public stop(): void {
+    console.log("Stopping all alien effects");
+    
     // Stop Schumann resonance
     this.stopOscillator(this.schumann);
     this.stopOscillator(this.schumannLFO);

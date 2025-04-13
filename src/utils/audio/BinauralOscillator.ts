@@ -29,6 +29,9 @@ export class BinauralOscillator extends BaseAudioEffect {
   public setup(options: AudioEffectOptions): void {
     if (!this.audioContext || !this.analyser) return;
     
+    // Make sure we're starting clean
+    this.stop();
+    
     this.baseFrequency = options.baseFrequency;
     this.beatFrequency = options.beatFrequency;
     this.volume = options.volume;
@@ -134,6 +137,9 @@ export class BinauralOscillator extends BaseAudioEffect {
    * Stop all oscillators
    */
   public stop(): void {
+    // Log that we're stopping oscillators
+    console.log("Stopping binaural oscillators");
+    
     // Stop oscillators
     this.stopOscillator(this.leftOscillator);
     this.stopOscillator(this.rightOscillator);
