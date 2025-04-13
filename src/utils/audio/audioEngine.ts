@@ -1,6 +1,6 @@
 
-// Re-export the BinauralBeatGenerator as the default export to maintain consistent API
+// Re-export the AudioEngine as the default export to maintain consistent API
 
-import audioEngine from './BinauralBeatGenerator';
+import audioEngine from './AudioEngine';
 
 export default audioEngine;

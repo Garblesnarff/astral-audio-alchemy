@@ -121,23 +121,8 @@ export class AudioPlayer implements IAudioPlayer {
       this.state.reset();
     }
     
-    // Set a timeout to verify cleanup was successful and execute callback
-    setTimeout(() => {
-      // Double check the alien effect was cleared, especially important
-      if (hadAlienEffect && this.alienEffect !== null) {
-        console.warn("AlienEffect still exists after cleanup timeout, forcing cleanup");
-        try {
-          this.alienEffect.stop();
-        } catch (e) {
-          console.error("Error during forced alien effect cleanup:", e);
-        }
-        this.alienEffect = null;
-      }
-      
-      this.transitionManager.completeStop();
-      
-      console.log("Audio stop operation completed successfully");
-    }, 300); // Reduced from 500ms to 300ms for faster transitions
+    // Schedule completion of the stop operation
+    this.transitionManager.scheduleStopCompletion(300);
   }
   
   /**
