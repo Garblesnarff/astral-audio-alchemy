@@ -22,12 +22,9 @@ export abstract class BaseAudioEffect {
       this.masterGain = this.registerNode(this.audioContext.createGain());
       this.masterGain.gain.value = 1;
       
-      // CRITICAL FIX: Connect to both analyzer AND destination
-      // This ensures the audio signal continues to the speakers
-      this.masterGain.connect(this.analyser);
-      
-      // Connect to destination through analyzer (which is already connected to destination in AudioContextManager)
-      console.log("BaseAudioEffect: Initialized audio routing - masterGain connected to analyzer");
+      // FIXED: We only connect to the main AudioContextManager's masterGain
+      // which already has the proper routing to analyser and destination
+      console.log("BaseAudioEffect: Initialized with corrected audio routing");
     }
   }
 

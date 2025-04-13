@@ -64,7 +64,7 @@ export class BinauralOscillator extends BaseAudioEffect {
       this.leftGain.connect(this.merger, 0, 0);  // Connect to left channel
       this.rightGain.connect(this.merger, 0, 1); // Connect to right channel
       
-      // Connect merger to master gain
+      // FIXED: Connect merger to master gain, which is already properly connected in the audio chain
       this.merger.connect(this.masterGain);
       
       // Start oscillators
