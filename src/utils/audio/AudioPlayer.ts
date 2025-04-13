@@ -1,7 +1,10 @@
+
 import { IAudioPlayer, AudioEffectOptions } from './types';
 import { AudioContextManager } from './AudioContextManager';
 import { BinauralOscillator } from './BinauralOscillator';
 import { AlienEffect } from './AlienEffect';
+import { AudioPlayerState } from './AudioPlayerState';
+import { AudioPlayerTransitionManager } from './AudioPlayerTransitionManager';
 
 /**
  * Class that handles audio playback
@@ -10,19 +13,13 @@ export class AudioPlayer implements IAudioPlayer {
   private contextManager: AudioContextManager;
   private binauralOscillator: BinauralOscillator | null = null;
   private alienEffect: AlienEffect | null = null;
-  
-  private isPlaying = false;
-  private baseFrequency = 200;
-  private beatFrequency = 10;
-  private volume = 0.5;
-  private currentPreset = '';
-  private startInProgress = false;
-  private stopInProgress = false;
-  private stopCompleteCallback: (() => void) | null = null;
-  private delayedStartTimeoutId: number | null = null;
+  private state: AudioPlayerState;
+  private transitionManager: AudioPlayerTransitionManager;
 
   constructor(contextManager: AudioContextManager) {
     this.contextManager = contextManager;
+    this.state = new AudioPlayerState();
+    this.transitionManager = new AudioPlayerTransitionManager(this.state);
   }
 
   /**
@@ -37,21 +34,15 @@ export class AudioPlayer implements IAudioPlayer {
       return;
     }
     
-    // Prevent multiple simultaneous starts
-    if (this.startInProgress) {
-      console.warn('Start operation already in progress, skipping');
+    // Begin start transition
+    if (!this.transitionManager.beginStart()) {
       return;
     }
-    
-    this.startInProgress = true;
     
     console.log(`Starting with preset: ${preset}, baseFreq: ${baseFreq}, beatFreq: ${beatFreq}, volume: ${volume}`);
     
     // Cancel any pending delayed starts
-    if (this.delayedStartTimeoutId !== null) {
-      window.clearTimeout(this.delayedStartTimeoutId);
-      this.delayedStartTimeoutId = null;
-    }
+    this.transitionManager.cancelDelayedStart();
     
     // Make sure all previous audio is fully stopped
     this.stop(() => {
@@ -59,11 +50,11 @@ export class AudioPlayer implements IAudioPlayer {
       
       console.log(`Stop operation completed, now starting ${preset} preset`);
       
-      this.isPlaying = true;
-      this.currentPreset = preset;
-      this.baseFrequency = baseFreq;
-      this.beatFrequency = beatFreq;
-      this.volume = volume;
+      this.state.isPlaying = true;
+      this.state.currentPreset = preset;
+      this.state.baseFrequency = baseFreq;
+      this.state.beatFrequency = beatFreq;
+      this.state.volume = volume;
 
       // Set master volume
       this.contextManager.setMasterVolume(volume);
@@ -86,7 +77,7 @@ export class AudioPlayer implements IAudioPlayer {
         this.alienEffect.setup(options);
       }
       
-      this.startInProgress = false;
+      this.transitionManager.completeStart();
       
       console.log(`${preset} preset started successfully`);
     });
@@ -96,25 +87,17 @@ export class AudioPlayer implements IAudioPlayer {
    * Stop all audio
    */
   public stop(callback?: () => void): void {
-    console.log("Stopping all audio. Current preset:", this.currentPreset);
+    console.log("Stopping all audio. Current preset:", this.state.currentPreset);
     
-    // Store callback if provided
-    if (callback) {
-      this.stopCompleteCallback = callback;
-    }
-    
-    // If already in the process of stopping, don't do it again
-    if (this.stopInProgress) {
-      console.warn('Stop operation already in progress, skipping');
+    // Begin stop transition
+    if (!this.transitionManager.beginStop(callback)) {
       return;
     }
-    
-    this.stopInProgress = true;
     
     // Record if we need to clean up the alien effect
     const hadAlienEffect = this.alienEffect !== null;
     
-    if (this.isPlaying) {
+    if (this.state.isPlaying) {
       // Stop binaural oscillator
       if (this.binauralOscillator) {
         try {
@@ -135,8 +118,7 @@ export class AudioPlayer implements IAudioPlayer {
         this.alienEffect = null;
       }
       
-      this.isPlaying = false;
-      this.currentPreset = '';
+      this.state.reset();
     }
     
     // Set a timeout to verify cleanup was successful and execute callback
@@ -152,13 +134,7 @@ export class AudioPlayer implements IAudioPlayer {
         this.alienEffect = null;
       }
       
-      this.stopInProgress = false;
-      
-      // Execute callback if exists
-      if (this.stopCompleteCallback) {
-        this.stopCompleteCallback();
-        this.stopCompleteCallback = null;
-      }
+      this.transitionManager.completeStop();
       
       console.log("Audio stop operation completed successfully");
     }, 300); // Reduced from 500ms to 300ms for faster transitions
@@ -168,9 +144,9 @@ export class AudioPlayer implements IAudioPlayer {
    * Set volume for all active gain nodes
    */
   public setVolume(volume: number): void {
-    console.log(`Setting volume to ${volume}, current preset: ${this.currentPreset}`);
+    console.log(`Setting volume to ${volume}, current preset: ${this.state.currentPreset}`);
     
-    this.volume = volume;
+    this.state.volume = volume;
     
     // Update master gain volume
     this.contextManager.setMasterVolume(volume);
@@ -190,21 +166,21 @@ export class AudioPlayer implements IAudioPlayer {
    * Check if currently playing
    */
   public getIsPlaying(): boolean {
-    return this.isPlaying;
+    return this.state.isPlaying;
   }
   
   /**
    * Get current preset
    */
   public getCurrentPreset(): string {
-    return this.currentPreset;
+    return this.state.currentPreset;
   }
   
   /**
    * Set base frequency
    */
   public setBaseFrequency(frequency: number): void {
-    this.baseFrequency = frequency;
+    this.state.baseFrequency = frequency;
     if (this.binauralOscillator) {
       this.binauralOscillator.setBaseFrequency(frequency);
     }
@@ -214,7 +190,7 @@ export class AudioPlayer implements IAudioPlayer {
    * Set beat frequency
    */
   public setBeatFrequency(frequency: number): void {
-    this.beatFrequency = frequency;
+    this.state.beatFrequency = frequency;
     if (this.binauralOscillator) {
       this.binauralOscillator.setBeatFrequency(frequency);
     }
@@ -224,13 +200,13 @@ export class AudioPlayer implements IAudioPlayer {
    * Get current base frequency
    */
   public getBaseFrequency(): number {
-    return this.baseFrequency;
+    return this.state.baseFrequency;
   }
   
   /**
    * Get current beat frequency
    */
   public getBeatFrequency(): number {
-    return this.beatFrequency;
+    return this.state.beatFrequency;
   }
 }
