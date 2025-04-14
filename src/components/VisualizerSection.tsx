@@ -25,46 +25,11 @@ const VisualizerSection: React.FC<VisualizerSectionProps> = ({ isPlaying, select
       >
         <FrequencyVisualizer isPlaying={isPlaying} />
       </div>
-      <div 
-        className={`transition-all duration-500 ${
-          isAlien 
-            ? 'border border-purple-500/30 rounded-lg p-2 bg-black/10 alien-pulse backdrop-blur-sm'
-            : isLucidDreaming 
-              ? 'border border-indigo-500/40 rounded-lg p-2 bg-indigo-950/10 lucid-pulse backdrop-blur-sm'
-              : isAstralProjection
-                ? 'border border-fuchsia-500/30 rounded-lg p-2 bg-gradient-to-r from-indigo-950/20 to-fuchsia-950/20 astral-pulse backdrop-blur-sm'
-                : isRemoteViewing
-                  ? 'border border-indigo-400/30 rounded-lg p-2 bg-gradient-to-r from-indigo-950/20 to-purple-950/20 remote-pulse backdrop-blur-sm'
-                  : ''
-        }`}
-      >
-        {isAlien && isPlaying && (
-          <div className="absolute -top-2 -right-2 px-2 py-1 bg-purple-500 text-white text-xs rounded-full animate-pulse z-10">
-            Alien Frequencies Active
-          </div>
-        )}
-        
-        {isLucidDreaming && isPlaying && (
-          <div className="absolute -top-2 -right-2 px-2 py-1 bg-indigo-500 text-white text-xs rounded-full animate-pulse z-10">
-            Lucid Dream Induction Active
-          </div>
-        )}
-        
-        {isAstralProjection && isPlaying && (
-          <div className="absolute -top-2 -right-2 px-2 py-1 bg-fuchsia-600 text-white text-xs rounded-full animate-pulse z-10">
-            Astral Projection Active
-          </div>
-        )}
-        
-        {isRemoteViewing && isPlaying && (
-          <div className="absolute -top-2 -right-2 px-2 py-1 bg-indigo-600 text-white text-xs rounded-full animate-pulse z-10">
-            Remote Viewing Active
-          </div>
-        )}
-        
-        <WaveformVisualizer isPlaying={isPlaying} preset={selectedPreset || ''} />
-      </div>
       
+      {/* Single container for WaveformVisualizer - removed duplicate code */}
+      <WaveformVisualizer isPlaying={isPlaying} preset={selectedPreset || ''} />
+      
+      {/* Specialized background effects - these were duplicated before */}
       {isAlien && isPlaying && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -bottom-10 left-0 w-full h-20 bg-gradient-to-t from-purple-900/20 to-transparent" />
