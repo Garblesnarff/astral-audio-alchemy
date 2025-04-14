@@ -1,7 +1,4 @@
-
-import { thetaDeltaMixGenerator } from './thetaDeltaMixGenerator';
-import { enhancedAlphaGenerator } from './enhancedAlphaGenerator';
-import { betaThetaCycleGenerator } from './betaThetaCycleGenerator';
+import { thetaDeltaMixGenerator, enhancedAlphaGenerator, betaThetaCycleGenerator } from './RemoteViewingGenerators';
 import { targetFocusMarkers } from './targetFocusMarkers';
 import { whiteNoiseGenerator } from './whiteNoiseGenerator';
 
