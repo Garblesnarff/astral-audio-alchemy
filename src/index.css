@@ -82,7 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: this 2px;
 }
 
 .waveform-bar {
@@ -90,5 +90,38 @@
   background-color: hsl(var(--primary));
   border-radius: 1px;
   transform-origin: bottom;
-  opacity: 0.7;
+  opacity: 0.85;
+  transition: height 0.3s ease;
+}
+
+/* Improved alien visualization - add shadows to make colors pop */
+.bg-purple-500 {
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+}
+
+.bg-green-400 {
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.bg-blue-400 {
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
+}
+
+.bg-amber-300 {
+  box-shadow: 0 0 8px rgba(252, 211, 77, 0.6);
+}
+
+.bg-red-400 {
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+}
+
+/* Add wave animation */
+@keyframes wave {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-wave {
+  animation: wave 3s infinite ease-in-out;
 }

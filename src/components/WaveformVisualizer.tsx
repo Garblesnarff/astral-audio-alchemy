@@ -75,7 +75,7 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
           className={cn(
             "waveform-bar transition-all duration-300",
             isPlaying ? "animate-wave" : "h-1",
-            bar.color
+            bar.color || ""
           )}
           style={{ 
             height: isPlaying ? `${bar.height}px` : '4px',

@@ -10,6 +10,7 @@ interface ControlPanelProps {
   onBeatFrequencyChange: (value: number) => void;
   onTimerEnd: () => void;
   isPlaying: boolean;
+  selectedPreset?: string | null;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -18,11 +19,21 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onBaseFrequencyChange,
   onBeatFrequencyChange,
   onTimerEnd,
-  isPlaying
+  isPlaying,
+  selectedPreset
 }) => {
+  const isAlienPreset = selectedPreset === 'alien';
+  
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-lg p-4 border border-border">
+      <div className={`bg-card rounded-lg p-4 border transition-all duration-300 ${
+        isAlienPreset ? 'border-purple-500/50 relative' : 'border-border'
+      }`}>
+        {isAlienPreset && (
+          <div className="absolute -top-2 -right-2 px-2 py-1 bg-purple-500 text-white text-xs rounded-full animate-pulse">
+            Alien Mode
+          </div>
+        )}
         <FrequencyControls
           baseFrequency={baseFrequency}
           beatFrequency={beatFrequency}
@@ -31,7 +42,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         />
       </div>
       
-      <div className="bg-card rounded-lg p-4 border border-border">
+      <div className={`bg-card rounded-lg p-4 border transition-all duration-300 ${
+        isAlienPreset ? 'border-purple-500/50' : 'border-border'
+      }`}>
         <Timer 
           onTimerEnd={onTimerEnd} 
           isPlaying={isPlaying}

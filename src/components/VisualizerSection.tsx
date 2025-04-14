@@ -10,9 +10,13 @@ interface VisualizerSectionProps {
 
 const VisualizerSection: React.FC<VisualizerSectionProps> = ({ isPlaying, selectedPreset }) => {
   return (
-    <div className="relative">
-      <FrequencyVisualizer isPlaying={isPlaying} />
-      <WaveformVisualizer isPlaying={isPlaying} preset={selectedPreset || ''} />
+    <div className="relative space-y-2">
+      <div className={`transition-all duration-500 ${selectedPreset === 'alien' ? 'opacity-85 border-purple-500' : 'opacity-100'}`}>
+        <FrequencyVisualizer isPlaying={isPlaying} />
+      </div>
+      <div className={`transition-all duration-500 ${selectedPreset === 'alien' ? 'border border-purple-500/30 rounded-lg p-2 bg-black/10' : ''}`}>
+        <WaveformVisualizer isPlaying={isPlaying} preset={selectedPreset || ''} />
+      </div>
     </div>
   );
 };
