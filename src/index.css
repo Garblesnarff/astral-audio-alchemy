@@ -318,3 +318,107 @@
 .bg-cosmic {
   background: radial-gradient(circle at center, rgba(189, 77, 212, 0.1), rgba(60, 41, 201, 0.05));
 }
+
+/* Remote viewing pulse effect for the wrapper */
+.remote-pulse {
+  animation: remotePulse 12s infinite;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+@keyframes remotePulse {
+  0% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+  33% { box-shadow: 0 0 20px rgba(129, 140, 248, 0.3); }
+  66% { box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
+  100% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+}
+
+/* Remote viewing particle effects */
+.remote-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.remote-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.8) 0%, rgba(79, 70, 229, 0) 70%);
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.6);
+  animation: floatRemoteParticle 18s infinite linear;
+}
+
+@keyframes floatRemoteParticle {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(var(--translate-x, 30px), var(--translate-y, -60px)) scale(1.3) rotate(180deg);
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(var(--translate-x, 60px), var(--translate-y, -120px)) scale(0.5) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Remote viewing bars in waveform */
+.remote-bar {
+  animation: remotepulse 7s infinite ease-in-out, remoteglow 10s infinite alternate;
+  filter: blur(0.5px);
+}
+
+@keyframes remotepulse {
+  0% { transform: scaleY(1); }
+  25% { transform: scaleY(1.1); }
+  50% { transform: scaleY(0.95); }
+  75% { transform: scaleY(1.05); }
+  100% { transform: scaleY(1); }
+}
+
+@keyframes remoteglow {
+  0% { filter: brightness(1) hue-rotate(0deg); }
+  33% { filter: brightness(1.3) hue-rotate(10deg); }
+  66% { filter: brightness(1.1) hue-rotate(-10deg); }
+  100% { filter: brightness(1) hue-rotate(0deg); }
+}
+
+/* Create a subtle background for remote viewing presets */
+.bg-remote {
+  background: radial-gradient(circle at center, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.05));
+}
+
+/* Remote viewing specific styles */
+.bg-indigo-500 {
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+}
+
+.bg-indigo-600 {
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.6);
+}
+
+.bg-blue-500 {
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+}
+
+/* Target focus animation */
+@keyframes targetPulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
+.target-pulse {
+  animation: targetPulse 3s infinite ease-in-out;
+}

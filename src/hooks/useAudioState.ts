@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import audioEngine from '@/utils/audioEngine';
 import { getPresetById } from '@/utils/presets';
@@ -57,6 +56,10 @@ export function useAudioState() {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
           
           handleAstralPresetToast(presetId);
+        } else if (presetId.startsWith('remote-')) {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
+          
+          handleRemoteViewingPresetToast(presetId);
         } else {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume);
         }
@@ -127,6 +130,52 @@ export function useAudioState() {
     }
   };
   
+  const handleRemoteViewingPresetToast = (presetId: string) => {
+    if (presetId === 'remote-theta-delta') {
+      toast({
+        title: "Theta-Delta Mix Mode",
+        description: "Optimal 4 Hz frequency for remote viewing information reception. Use headphones for best results.",
+        duration: 5000,
+      });
+    } else if (presetId === 'remote-alpha') {
+      toast({
+        title: "Alpha Enhancement Mode",
+        description: "Alert but relaxed state for data analysis and processing. Ideal for the analysis phase.",
+        duration: 5000,
+      });
+    } else if (presetId === 'remote-beta-theta') {
+      toast({
+        title: "Beta-Theta Cycling",
+        description: "Alternates between focus and receptivity for optimal information flow.",
+        duration: 5000,
+      });
+    } else if (presetId === 'remote-focused') {
+      toast({
+        title: "Focused Viewing Mode",
+        description: "Targeted frequency set with interval markers for guided sessions. Use the Target Focus Timer for best results.",
+        duration: 5000,
+      });
+    } else if (presetId === 'remote-crv') {
+      toast({
+        title: "CRV Protocol Activated",
+        description: "6-stage Coordinate Remote Viewing protocol with progressive frequency shifts.",
+        duration: 5000,
+      });
+    } else if (presetId === 'remote-erv') {
+      toast({
+        title: "ERV Protocol Activated",
+        description: "Extended Remote Viewing with deeper delta wave entrainment for longer sessions.",
+        duration: 5000,
+      });
+    } else if (presetId === 'remote-arv') {
+      toast({
+        title: "ARV Protocol Activated",
+        description: "Associative Remote Viewing with specialized frequency patterns for prediction tasks.",
+        duration: 5000,
+      });
+    }
+  };
+  
   const togglePlay = useCallback(() => {
     if (isPlaying) {
       audioEngine.stop();
@@ -162,6 +211,14 @@ export function useAudioState() {
             toast({
               title: "Astral Projection Mode Activated",
               description: "For best results, lay flat on your back in a quiet, dark environment.",
+              duration: 5000,
+            });
+          } else if (selectedPreset.startsWith('remote-')) {
+            audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, selectedPreset);
+            
+            toast({
+              title: "Remote Viewing Mode Activated",
+              description: "Find a quiet space and focus on receiving information. Use the target timer for structured sessions.",
               duration: 5000,
             });
           } else {

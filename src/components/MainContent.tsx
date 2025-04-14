@@ -7,6 +7,8 @@ import PresetSelection from '@/components/PresetSelection';
 import LucidDreamingControls from '@/components/LucidDreamingControls';
 import AstralProjectionControls from '@/components/AstralProjectionControls';
 import AstralProjectionGuide from '@/components/AstralProjectionGuide';
+import RemoteViewingControls from '@/components/RemoteViewingControls';
+import RemoteViewingGuide from '@/components/RemoteViewingGuide';
 
 interface MainContentProps {
   isPlaying: boolean;
@@ -41,6 +43,7 @@ const MainContent: React.FC<MainContentProps> = ({
 }) => {
   const isLucidDreamingPreset = selectedPreset && selectedPreset.startsWith('lucid-');
   const isAstralProjectionPreset = selectedPreset && selectedPreset.startsWith('astral-');
+  const isRemoteViewingPreset = selectedPreset && selectedPreset.startsWith('remote-');
   
   return (
     <div className="space-y-8">
@@ -78,6 +81,13 @@ const MainContent: React.FC<MainContentProps> = ({
               selectedPreset={selectedPreset}
             />
           )}
+          
+          {isRemoteViewingPreset && (
+            <RemoteViewingControls 
+              isPlaying={isPlaying}
+              selectedPreset={selectedPreset}
+            />
+          )}
         </div>
         
         <div className="md:col-span-2 space-y-6">
@@ -90,6 +100,10 @@ const MainContent: React.FC<MainContentProps> = ({
           
           {isAstralProjectionPreset && (
             <AstralProjectionGuide selectedPreset={selectedPreset} />
+          )}
+          
+          {isRemoteViewingPreset && (
+            <RemoteViewingGuide selectedPreset={selectedPreset} />
           )}
         </div>
       </div>
