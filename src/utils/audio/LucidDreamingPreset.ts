@@ -1,4 +1,3 @@
-
 import { AudioEngineBase } from './AudioEngineBase';
 
 export class LucidDreamingPreset extends AudioEngineBase {
@@ -10,7 +9,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
   private alphaGain: GainNode | null = null;
   private gammaOscillator: OscillatorNode | null = null;
   private gammaGain: GainNode | null = null;
-  private masterGain: GainNode | null = null;
   private realityCheckTimer: number | null = null;
   private realityCheckSound: OscillatorNode | null = null;
   private realityCheckGain: GainNode | null = null;
@@ -50,7 +48,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
     }
   }
   
-  // Generate pure theta waves (4-8 Hz)
   private setupThetaWaves(baseFreq: number, beatFreq: number) {
     if (!this.audioContext || !this.analyser) return;
     
@@ -59,17 +56,13 @@ export class LucidDreamingPreset extends AudioEngineBase {
     
     this.leftGain = this.audioContext.createGain();
     this.rightGain = this.audioContext.createGain();
-    this.masterGain = this.audioContext.createGain();
     
-    // Configure for theta waves (4-8 Hz difference)
     this.leftOscillator.frequency.value = baseFreq;
     this.rightOscillator.frequency.value = baseFreq + beatFreq;
     
     this.leftGain.gain.value = this.baseVolume;
     this.rightGain.gain.value = this.baseVolume;
-    this.masterGain.gain.value = this.baseVolume;
     
-    // Connect nodes
     this.leftOscillator.connect(this.leftGain);
     this.rightOscillator.connect(this.rightGain);
     
@@ -78,27 +71,22 @@ export class LucidDreamingPreset extends AudioEngineBase {
     
     this.masterGain.connect(this.analyser);
     
-    // Start oscillators
     this.leftOscillator.start();
     this.rightOscillator.start();
     
-    // Add dream stabilization
     this.addDreamStabilization();
   }
   
-  // Blend theta and alpha waves for optimal lucid dreaming state
   private setupThetaAlphaMix(baseFreq: number, beatFreq: number) {
-    // First setup base theta waves
     this.setupThetaWaves(baseFreq, beatFreq);
     
     if (!this.audioContext || !this.analyser) return;
     
-    // Add alpha wave component (8-12 Hz)
     this.alphaOscillator = this.audioContext.createOscillator();
     this.alphaGain = this.audioContext.createGain();
     
-    this.alphaOscillator.frequency.value = baseFreq + 10; // Alpha range
-    this.alphaGain.gain.value = this.baseVolume * 0.4; // Slightly quieter than main frequencies
+    this.alphaOscillator.frequency.value = baseFreq + 10;
+    this.alphaGain.gain.value = this.baseVolume * 0.4;
     
     this.alphaOscillator.connect(this.alphaGain);
     this.alphaGain.connect(this.masterGain as GainNode);
@@ -106,19 +94,16 @@ export class LucidDreamingPreset extends AudioEngineBase {
     this.alphaOscillator.start();
   }
   
-  // Introduce gamma wave components to mimic brain activity during lucid dreams
   private setupWithGamma(baseFreq: number, beatFreq: number) {
-    // Setup theta-alpha mix first
     this.setupThetaAlphaMix(baseFreq, beatFreq);
     
     if (!this.audioContext || !this.analyser) return;
     
-    // Add gamma wave component (~40 Hz)
     this.gammaOscillator = this.audioContext.createOscillator();
     this.gammaGain = this.audioContext.createGain();
     
-    this.gammaOscillator.frequency.value = baseFreq + 40; // Gamma frequency
-    this.gammaGain.gain.value = this.baseVolume * 0.25; // Subtle gamma component
+    this.gammaOscillator.frequency.value = baseFreq + 40;
+    this.gammaGain.gain.value = this.baseVolume * 0.25;
     
     this.gammaOscillator.connect(this.gammaGain);
     this.gammaGain.connect(this.masterGain as GainNode);
@@ -126,20 +111,17 @@ export class LucidDreamingPreset extends AudioEngineBase {
     this.gammaOscillator.start();
   }
   
-  // Setup for Wake-Back-To-Bed technique
   private setupWBTB(baseFreq: number, beatFreq: number) {
     this.isWBTBMode = true;
     this.setupThetaWaves(baseFreq, beatFreq);
   }
   
-  // Add subtle background frequencies for dream stabilization
   private addDreamStabilization() {
     if (!this.audioContext || !this.masterGain) return;
     
     this.dreamStabilizationOsc = this.audioContext.createOscillator();
     this.dreamStabilizationGain = this.audioContext.createGain();
     
-    // Use a very low frequency for subtle modulation
     this.dreamStabilizationOsc.frequency.value = 0.2; 
     this.dreamStabilizationGain.gain.value = this.baseVolume * 0.1;
     
@@ -149,7 +131,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
     this.dreamStabilizationOsc.start();
   }
   
-  // Insert audio cues at intervals for reality checks
   enableRealityCheck(intervalMinutes: number = 15) {
     this.realityCheckInterval = intervalMinutes;
     this.scheduleNextRealityCheck();
@@ -169,24 +150,20 @@ export class LucidDreamingPreset extends AudioEngineBase {
   private playRealityCheckSound() {
     if (!this.audioContext || !this.analyser || !this.isPlaying) return;
     
-    // Create temporary oscillator for the reality check sound
     const checkOsc = this.audioContext.createOscillator();
     const checkGain = this.audioContext.createGain();
     
-    checkOsc.frequency.value = 800; // Higher pitched sound for reality check
+    checkOsc.frequency.value = 800;
     checkGain.gain.value = this.baseVolume * 0.5;
     
     checkOsc.connect(checkGain);
     checkGain.connect(this.analyser);
     
-    // Brief sound
     checkOsc.start();
     
-    // Fade out after 0.5 seconds
     checkGain.gain.setValueAtTime(this.baseVolume * 0.5, this.audioContext.currentTime);
     checkGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.5);
     
-    // Stop after fade out
     setTimeout(() => {
       checkOsc.stop();
       checkOsc.disconnect();
@@ -194,7 +171,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
     }, 500);
   }
   
-  // Set up timer for Wake-Back-To-Bed technique
   startWBTBTimer(wakeUpAfterMinutes: number) {
     if (!this.isWBTBMode) return;
     
@@ -210,21 +186,18 @@ export class LucidDreamingPreset extends AudioEngineBase {
   private playWakeUpSequence() {
     if (!this.audioContext || !this.analyser || !this.isPlaying) return;
     
-    // Gradually increase volume of a gentle wake-up tone
     const wakeupOsc = this.audioContext.createOscillator();
     const wakeupGain = this.audioContext.createGain();
     
-    wakeupOsc.frequency.value = 400; // Gentle wake-up tone
+    wakeupOsc.frequency.value = 400;
     wakeupGain.gain.value = 0.001;
     
     wakeupOsc.connect(wakeupGain);
     wakeupGain.connect(this.analyser);
     
-    // Gradually increase volume
     wakeupOsc.start();
     wakeupGain.gain.exponentialRampToValueAtTime(this.baseVolume, this.audioContext.currentTime + 15);
     
-    // Stop after wake-up sequence
     setTimeout(() => {
       wakeupGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 5);
       setTimeout(() => {
@@ -242,7 +215,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
       this.masterGain.gain.value = volume;
     }
     
-    // Adjust relative volumes of components
     if (this.alphaGain) {
       this.alphaGain.gain.value = volume * 0.4;
     }
@@ -258,7 +230,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
   
   stop() {
     if (this.isPlaying) {
-      // Stop oscillators
       this.stopOscillator(this.leftOscillator);
       this.stopOscillator(this.rightOscillator);
       this.stopOscillator(this.alphaOscillator);
@@ -266,7 +237,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
       this.stopOscillator(this.dreamStabilizationOsc);
       this.stopOscillator(this.realityCheckSound);
       
-      // Clean up gain nodes
       this.disconnectNode(this.leftGain);
       this.disconnectNode(this.rightGain);
       this.disconnectNode(this.alphaGain);
@@ -275,7 +245,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
       this.disconnectNode(this.dreamStabilizationGain);
       this.disconnectNode(this.realityCheckGain);
       
-      // Reset timers
       if (this.realityCheckTimer) {
         window.clearTimeout(this.realityCheckTimer);
         this.realityCheckTimer = null;
@@ -294,7 +263,6 @@ export class LucidDreamingPreset extends AudioEngineBase {
       this.alphaGain = null;
       this.gammaOscillator = null;
       this.gammaGain = null;
-      this.masterGain = null;
       this.dreamStabilizationOsc = null;
       this.dreamStabilizationGain = null;
       this.realityCheckSound = null;

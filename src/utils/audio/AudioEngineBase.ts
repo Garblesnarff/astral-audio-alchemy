@@ -85,4 +85,33 @@ export class AudioEngineBase {
       this.masterGain.gain.value = volume;
     }
   }
+  
+  // Default implementation that can be overridden by subclasses
+  enableRealityCheck(_intervalMinutes: number = 15) {
+    // This will be implemented by LucidDreamingPreset
+  }
+  
+  disableRealityCheck() {
+    // This will be implemented by LucidDreamingPreset
+  }
+  
+  startWBTBTimer(_wakeUpAfterMinutes: number) {
+    // This will be implemented by LucidDreamingPreset
+  }
+  
+  cancelWBTB() {
+    // This will be implemented by LucidDreamingPreset
+  }
+  
+  setBaseFrequency(frequency: number) {
+    this.baseFrequency = frequency;
+  }
+  
+  setBeatFrequency(frequency: number) {
+    this.beatFrequency = frequency;
+  }
+  
+  start(_baseFreq: number, _beatFreq: number, _volume: number = 0.5, _preset: string = 'custom') {
+    // This will be implemented by subclasses
+  }
 }

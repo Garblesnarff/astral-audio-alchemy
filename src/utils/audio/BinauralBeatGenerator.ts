@@ -54,30 +54,22 @@ export class BinauralBeatGenerator {
   
   // Enable reality check sounds for lucid dreaming
   enableRealityCheck(intervalMinutes: number = 15) {
-    if (this.activeEngine === this.lucidDreamingPreset) {
-      this.lucidDreamingPreset.enableRealityCheck(intervalMinutes);
-    }
+    this.activeEngine.enableRealityCheck(intervalMinutes);
   }
   
   // Disable reality check sounds
   disableRealityCheck() {
-    if (this.activeEngine === this.lucidDreamingPreset) {
-      this.lucidDreamingPreset.disableRealityCheck();
-    }
+    this.activeEngine.disableRealityCheck();
   }
   
   // Start WBTB timer for lucid dreaming
   startWBTBTimer(wakeUpAfterMinutes: number) {
-    if (this.activeEngine === this.lucidDreamingPreset) {
-      this.lucidDreamingPreset.startWBTBTimer(wakeUpAfterMinutes);
-    }
+    this.activeEngine.startWBTBTimer(wakeUpAfterMinutes);
   }
   
   // Cancel WBTB timer
   cancelWBTB() {
-    if (this.activeEngine === this.lucidDreamingPreset) {
-      this.lucidDreamingPreset.cancelWBTB();
-    }
+    this.activeEngine.cancelWBTB();
   }
   
   stop() {
@@ -99,15 +91,11 @@ export class BinauralBeatGenerator {
   }
   
   setBaseFrequency(frequency: number) {
-    if (this.activeEngine === this.standardPreset) {
-      this.standardPreset.setBaseFrequency(frequency);
-    }
+    this.activeEngine.setBaseFrequency(frequency);
   }
   
   setBeatFrequency(frequency: number) {
-    if (this.activeEngine === this.standardPreset) {
-      this.standardPreset.setBeatFrequency(frequency);
-    }
+    this.activeEngine.setBeatFrequency(frequency);
   }
   
   getBaseFrequency() {
