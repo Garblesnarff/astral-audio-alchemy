@@ -23,11 +23,16 @@ const PresetCard: React.FC<PresetCardProps> = ({ preset, isActive, onSelect }) =
   
   const icon = categoryIcons[preset.category] || '🔊';
   
+  const handleCardClick = () => {
+    onSelect(preset.id);
+  };
+  
   return (
     <Card 
       className={`relative transition-all duration-300 hover:shadow-lg ${
         isActive ? 'border-primary shadow-primary/20 shadow-lg' : 'hover:scale-[1.02]'
-      }`}
+      } cursor-pointer`}
+      onClick={handleCardClick}
     >
       {isActive && (
         <div className="absolute -top-2 -right-2 bg-primary rounded-full p-0.5">
@@ -73,7 +78,11 @@ const PresetCard: React.FC<PresetCardProps> = ({ preset, isActive, onSelect }) =
         <Button 
           size="sm" 
           variant={isActive ? "default" : "secondary"}
-          onClick={() => onSelect(preset.id)}
+          onClick={(e) => {
+            // Prevent the card's onClick from firing
+            e.stopPropagation();
+            onSelect(preset.id);
+          }}
         >
           {isActive ? 'Selected' : 'Select'}
         </Button>
