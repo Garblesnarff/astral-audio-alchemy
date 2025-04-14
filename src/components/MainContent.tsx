@@ -7,7 +7,7 @@ import PresetSelection from '@/components/PresetSelection';
 import LucidDreamingControls from '@/components/LucidDreamingControls';
 import AstralProjectionControls from '@/components/AstralProjectionControls';
 import AstralProjectionGuide from '@/components/AstralProjectionGuide';
-import RemoteViewingControls from '@/components/RemoteViewingControls';
+import RemoteViewingControls from '@/components/remote-viewing/RemoteViewingControls';
 import RemoteViewingGuide from '@/components/RemoteViewingGuide';
 
 interface MainContentProps {
