@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { presets, Preset, getPresetById } from '@/utils/presets';
@@ -32,7 +31,7 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
     <div className="space-y-4">
       <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
         <div className="bg-card rounded-lg p-1 overflow-hidden">
-          <TabsList className="grid grid-cols-4 md:grid-cols-8 gap-1 w-full">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-1 w-full">
             {categories.map((category) => (
               <TabsTrigger 
                 key={category} 
