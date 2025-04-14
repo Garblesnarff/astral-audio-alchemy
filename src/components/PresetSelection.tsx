@@ -31,13 +31,13 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
   return (
     <div className="space-y-4">
       <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
-        <div className="bg-card rounded-lg p-1">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-1 w-full">
+        <div className="bg-card rounded-lg p-1 overflow-hidden">
+          <TabsList className="grid grid-cols-4 md:grid-cols-8 gap-1 w-full">
             {categories.map((category) => (
               <TabsTrigger 
                 key={category} 
                 value={category} 
-                className="capitalize py-2.5"
+                className="capitalize py-2.5 px-1 text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis"
               >
                 {category === 'special' ? '👽' : 
                  category === 'lucid' ? '💤' : 
@@ -51,11 +51,7 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
         
         {categories.map((category) => (
           <TabsContent key={category} value={category} className="p-0 mt-4">
-            <div className={`grid ${
-              category === 'lucid' || category === 'astral' || category === 'remote'
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' 
-                : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
-            }`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {presetsByCategory[category].map((preset) => (
                 <PresetCard
                   key={preset.id}
