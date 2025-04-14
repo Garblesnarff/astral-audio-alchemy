@@ -29,38 +29,46 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
   const categories = Object.keys(presetsByCategory);
   
   return (
-    <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
-      <TabsList className="grid grid-cols-8 gap-1">
-        {categories.map((category) => (
-          <TabsTrigger key={category} value={category} className="capitalize">
-            {category === 'special' ? '👽' : 
-             category === 'lucid' ? '💤' : 
-             category === 'astral' ? '🚀' : 
-             category === 'remote' ? '🔭' :
-             category}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      
-      {categories.map((category) => (
-        <TabsContent key={category} value={category} className="p-0 mt-4">
-          <div className={`grid ${
-            category === 'lucid' || category === 'astral' || category === 'remote'
-              ? 'grid-cols-2 gap-4' 
-              : 'grid-cols-1 sm:grid-cols-2 gap-4'
-          }`}>
-            {presetsByCategory[category].map((preset) => (
-              <PresetCard
-                key={preset.id}
-                preset={preset}
-                isActive={selectedPreset === preset.id}
-                onSelect={onSelectPreset}
-              />
+    <div className="space-y-4">
+      <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
+        <div className="bg-card rounded-lg p-1">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-1 w-full">
+            {categories.map((category) => (
+              <TabsTrigger 
+                key={category} 
+                value={category} 
+                className="capitalize py-2.5"
+              >
+                {category === 'special' ? '👽' : 
+                 category === 'lucid' ? '💤' : 
+                 category === 'astral' ? '🚀' : 
+                 category === 'remote' ? '🔭' :
+                 category}
+              </TabsTrigger>
             ))}
-          </div>
-        </TabsContent>
-      ))}
-    </Tabs>
+          </TabsList>
+        </div>
+        
+        {categories.map((category) => (
+          <TabsContent key={category} value={category} className="p-0 mt-4">
+            <div className={`grid ${
+              category === 'lucid' || category === 'astral' || category === 'remote'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' 
+                : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
+            }`}>
+              {presetsByCategory[category].map((preset) => (
+                <PresetCard
+                  key={preset.id}
+                  preset={preset}
+                  isActive={selectedPreset === preset.id}
+                  onSelect={onSelectPreset}
+                />
+              ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   );
 };
 

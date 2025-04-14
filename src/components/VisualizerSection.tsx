@@ -1,4 +1,3 @@
-
 import React from 'react';
 import FrequencyVisualizer from '@/components/FrequencyVisualizer';
 import WaveformVisualizer from '@/components/WaveformVisualizer';
