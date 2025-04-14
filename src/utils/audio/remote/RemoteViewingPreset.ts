@@ -2,32 +2,40 @@
 import { RemoteViewingBase } from './RemoteViewingBase';
 import { RemoteViewingRecorder } from './RemoteViewingRecorder';
 import { TargetFocusTimer } from './TargetFocusTimer';
-import { thetaDeltaMixGenerator } from './thetaDeltaMixGenerator';
-import { enhancedAlphaGenerator } from './enhancedAlphaGenerator';
-import { betaThetaCycleGenerator } from './betaThetaCycleGenerator';
-import { whiteNoiseGenerator } from './whiteNoiseGenerator';
-import { targetFocusMarkers } from './targetFocusMarkers';
-import { sessionProgressionGenerator } from './sessionProgressionGenerator';
+import { RemoteViewingOscillators } from './RemoteViewingOscillators';
+import { RemoteViewingProtocolManager } from './RemoteViewingProtocolManager';
 
 /**
  * Remote Viewing Preset - Specialized audio engine for remote viewing experiences
  */
 export class RemoteViewingPreset extends RemoteViewingBase {
-  private thetaDeltaOscillators: { leftOsc: OscillatorNode; rightOsc: OscillatorNode } | null = null;
-  private enhancedAlphaOscillators: { leftOsc: OscillatorNode; rightOsc: OscillatorNode } | null = null;
-  private betaThetaOscillators: { leftOsc: OscillatorNode; rightOsc: OscillatorNode } | null = null;
-  private whiteNoiseNode: AudioBufferSourceNode | null = null;
-  private targetFocusNodes: AudioNode[] = [];
-  private sessionProgressionNodes: AudioNode[] = [];
-  
   // Specialized modules
   private recorder: RemoteViewingRecorder;
   private targetTimer: TargetFocusTimer;
+  private oscillators: RemoteViewingOscillators;
+  private protocolManager: RemoteViewingProtocolManager;
   
   constructor() {
     super();
     this.recorder = new RemoteViewingRecorder();
     this.targetTimer = new TargetFocusTimer();
+    this.oscillators = new RemoteViewingOscillators();
+    this.protocolManager = new RemoteViewingProtocolManager();
+  }
+  
+  /**
+   * Initialize the audio context
+   */
+  override initialize(): boolean {
+    const result = super.initialize();
+    
+    if (result && this.audioContext && this.leftGain && this.rightGain && this.masterGain) {
+      this.oscillators.initialize(this.audioContext, this.leftGain, this.rightGain, this.masterGain);
+      this.protocolManager.initialize(this.audioContext, this.masterGain);
+      return true;
+    }
+    
+    return false;
   }
   
   /**
@@ -45,86 +53,16 @@ export class RemoteViewingPreset extends RemoteViewingBase {
     this.volume = volume;
     this.currentPreset = preset;
     
-    if (this.audioContext && this.leftGain && this.rightGain) {
-      // Based on the preset, start the appropriate oscillators
-      switch (preset) {
-        case 'remote-theta-delta':
-          this.thetaDeltaOscillators = thetaDeltaMixGenerator(
-            this.audioContext,
-            this.baseFrequency,
-            this.beatFrequency,
-            this.leftGain,
-            this.rightGain
-          );
-          break;
-        case 'remote-alpha':
-          this.enhancedAlphaOscillators = enhancedAlphaGenerator(
-            this.audioContext,
-            this.baseFrequency,
-            this.beatFrequency,
-            this.leftGain,
-            this.rightGain
-          );
-          break;
-        case 'remote-beta-theta':
-          this.betaThetaOscillators = betaThetaCycleGenerator(
-            this.audioContext,
-            this.baseFrequency,
-            this.beatFrequency,
-            this.leftGain,
-            this.rightGain
-          );
-          break;
-        case 'remote-focused':
-          // For focused viewing, we use theta-delta with target focus markers
-          this.thetaDeltaOscillators = thetaDeltaMixGenerator(
-            this.audioContext,
-            this.baseFrequency,
-            this.beatFrequency,
-            this.leftGain,
-            this.rightGain
-          );
-          this.targetFocusNodes = targetFocusMarkers(
-            this.audioContext,
-            this.masterGain!
-          );
-          break;
-        case 'remote-crv':
-          // Coordinate Remote Viewing protocol
-          this.currentProtocol = 'crv';
-          this.sessionProgressionNodes = sessionProgressionGenerator(
-            this.audioContext,
-            this.masterGain!,
-            'crv'
-          );
-          break;
-        case 'remote-erv':
-          // Extended Remote Viewing protocol
-          this.currentProtocol = 'erv';
-          this.sessionProgressionNodes = sessionProgressionGenerator(
-            this.audioContext,
-            this.masterGain!,
-            'erv'
-          );
-          break;
-        case 'remote-arv':
-          // Associative Remote Viewing protocol
-          this.currentProtocol = 'arv';
-          this.sessionProgressionNodes = sessionProgressionGenerator(
-            this.audioContext,
-            this.masterGain!,
-            'arv'
-          );
-          break;
-        default:
-          // Default to theta-delta mix
-          this.thetaDeltaOscillators = thetaDeltaMixGenerator(
-            this.audioContext,
-            this.baseFrequency,
-            this.beatFrequency,
-            this.leftGain,
-            this.rightGain
-          );
+    if (this.audioContext && this.leftGain && this.rightGain && this.masterGain) {
+      // Check if it's a protocol-based preset
+      if (preset === 'remote-crv' || preset === 'remote-erv' || preset === 'remote-arv') {
+        // Extract protocol name from preset (remove 'remote-' prefix)
+        const protocol = preset.replace('remote-', '');
+        this.currentProtocol = protocol;
+        this.protocolManager.startProtocol(protocol);
+      } else {
+        // Regular frequency preset
+        this.oscillators.startOscillators(preset, baseFreq, beatFreq);
       }
       
       // Set initial volume
@@ -136,46 +74,11 @@ export class RemoteViewingPreset extends RemoteViewingBase {
    * Stop the remote viewing binaural beat
    */
   stop(): void {
-    // Stop oscillators
-    if (this.thetaDeltaOscillators) {
-      this.thetaDeltaOscillators.leftOsc.stop();
-      this.thetaDeltaOscillators.rightOsc.stop();
-      this.thetaDeltaOscillators = null;
-    }
+    // Stop all oscillators
+    this.oscillators.stopOscillators();
     
-    if (this.enhancedAlphaOscillators) {
-      this.enhancedAlphaOscillators.leftOsc.stop();
-      this.enhancedAlphaOscillators.rightOsc.stop();
-      this.enhancedAlphaOscillators = null;
-    }
-    
-    if (this.betaThetaOscillators) {
-      this.betaThetaOscillators.leftOsc.stop();
-      this.betaThetaOscillators.rightOsc.stop();
-      this.betaThetaOscillators = null;
-    }
-    
-    // Stop white noise
-    if (this.whiteNoiseNode) {
-      this.whiteNoiseNode.stop();
-      this.whiteNoiseNode = null;
-    }
-    
-    // Stop target focus markers
-    this.targetFocusNodes.forEach(node => {
-      if (node instanceof OscillatorNode) {
-        node.stop();
-      }
-    });
-    this.targetFocusNodes = [];
-    
-    // Stop session progression
-    this.sessionProgressionNodes.forEach(node => {
-      if (node instanceof OscillatorNode) {
-        node.stop();
-      }
-    });
-    this.sessionProgressionNodes = [];
+    // Stop protocol progression
+    this.protocolManager.stopProtocol();
     
     // Clean up any active timers
     this.targetTimer.cancelTimer();
@@ -190,20 +93,7 @@ export class RemoteViewingPreset extends RemoteViewingBase {
    * Generate white noise for energy clearing
    */
   clearEnergy(durationMs: number = 5000): void {
-    if (!this.audioContext) return;
-    
-    // If any white noise is currently playing, stop it
-    if (this.whiteNoiseNode) {
-      this.whiteNoiseNode.stop();
-      this.whiteNoiseNode = null;
-    }
-    
-    // Create new white noise
-    this.whiteNoiseNode = whiteNoiseGenerator(
-      this.audioContext,
-      this.masterGain!,
-      durationMs
-    );
+    this.oscillators.clearEnergy(durationMs);
   }
   
   /**
@@ -237,11 +127,27 @@ export class RemoteViewingPreset extends RemoteViewingBase {
   }
   
   /**
+   * Get current protocol
+   */
+  getCurrentProtocol(): string {
+    return this.protocolManager.getCurrentProtocol();
+  }
+  
+  /**
+   * Set current protocol
+   */
+  setProtocol(protocol: 'crv' | 'erv' | 'arv'): void {
+    this.protocolManager.setProtocol(protocol);
+  }
+  
+  /**
    * Clean up all resources
    */
   cleanup(): void {
     this.stop();
     this.targetTimer.cleanup();
+    this.oscillators.cleanup();
+    this.protocolManager.cleanup();
     super.cleanup();
   }
 }
