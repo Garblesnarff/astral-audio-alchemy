@@ -9,6 +9,7 @@ import AstralProjectionControls from '@/components/AstralProjectionControls';
 import AstralProjectionGuide from '@/components/AstralProjectionGuide';
 import RemoteViewingControls from '@/components/remote-viewing/RemoteViewingControls';
 import RemoteViewingGuide from '@/components/RemoteViewingGuide';
+import LucidDreamingGuide from '@/components/LucidDreamingGuide';
 
 interface MainContentProps {
   isPlaying: boolean;
@@ -97,6 +98,10 @@ const MainContent: React.FC<MainContentProps> = ({
             currentTab={currentTab}
             onTabChange={setCurrentTab}
           />
+          
+          {isLucidDreamingPreset && (
+            <LucidDreamingGuide selectedPreset={selectedPreset} />
+          )}
           
           {isAstralProjectionPreset && (
             <AstralProjectionGuide selectedPreset={selectedPreset} />
