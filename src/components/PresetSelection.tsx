@@ -2,12 +2,14 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { presets, Preset, getPresetById } from '@/utils/presets';
 import PresetCard from '@/components/PresetCard';
+
 interface PresetSelectionProps {
   selectedPreset: string | null;
   onSelectPreset: (presetId: string) => void;
   currentTab: string;
   onTabChange: (value: string) => void;
 }
+
 const PresetSelection: React.FC<PresetSelectionProps> = ({
   selectedPreset,
   onSelectPreset,
@@ -26,8 +28,8 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
   return <div className="space-y-4">
       <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
         <div className="bg-card rounded-lg p-1 overflow-hidden">
-          <TabsList className="grid grid-cols-4 sm:grid-cols-4 gap-2 w-full mx-0 py-0 px-0">
-            {categories.map(category => <TabsTrigger key={category} value={category} className="capitalize py-2.5 px-1 text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">
+          <TabsList className="grid grid-cols-4 sm:grid-cols-4 gap-2 w-full mx-0 py-2 px-0 h-20">
+            {categories.map(category => <TabsTrigger key={category} value={category} className="capitalize py-3.5 px-1 text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">
                 {category === 'special' ? '👽' : category === 'lucid' ? '💤' : category === 'astral' ? '🚀' : category === 'remote' ? '🔭' : category}
               </TabsTrigger>)}
           </TabsList>
@@ -41,4 +43,5 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
       </Tabs>
     </div>;
 };
+
 export default PresetSelection;
