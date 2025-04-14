@@ -1,6 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { Sparkles } from 'lucide-react';
 
 interface WaveformVisualizerProps {
   isPlaying: boolean;
@@ -9,7 +10,10 @@ interface WaveformVisualizerProps {
 
 const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, preset }) => {
   const [bars, setBars] = useState<Array<{ height: number; delay: number; color?: string }>>([]);
+  const [particles, setParticles] = useState<Array<{ x: number; y: number; size: number; speed: number; color: string }>>([]);
+  const particleRef = useRef<HTMLDivElement>(null);
   
+  // Generate initial bars based on preset
   useEffect(() => {
     // Create random bar heights
     const totalBars = 60;
@@ -55,6 +59,11 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         return { height, delay, color };
       });
       setBars(newBars);
+      
+      // Initialize particles for alien preset
+      if (isPlaying) {
+        initializeParticles();
+      }
     } else {
       // Default visualization for other presets
       const newBars = Array.from({ length: totalBars }).map((_, i) => {
@@ -64,25 +73,115 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         };
       });
       setBars(newBars);
+      setParticles([]);
     }
-  }, [preset]);
+  }, [preset, isPlaying]);
+  
+  // Initialize particles for the alien effect
+  const initializeParticles = () => {
+    const particleCount = 30;
+    const newParticles = Array.from({ length: particleCount }).map(() => {
+      return {
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 1,
+        speed: Math.random() * 1 + 0.2,
+        color: getRandomAlienColor()
+      };
+    });
+    setParticles(newParticles);
+  };
+  
+  // Get random color for particles
+  const getRandomAlienColor = () => {
+    const colors = [
+      'rgba(168, 85, 247, 0.8)',  // purple
+      'rgba(74, 222, 128, 0.8)',  // green
+      'rgba(96, 165, 250, 0.8)',  // blue
+      'rgba(252, 211, 77, 0.8)',  // amber
+      'rgba(248, 113, 113, 0.8)'  // red
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+  
+  // Update particle positions for animation
+  useEffect(() => {
+    if (!isPlaying || preset !== 'alien' || particles.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setParticles(prevParticles => 
+        prevParticles.map(particle => {
+          // Move particles upward
+          let newY = particle.y - particle.speed;
+          
+          // Reset position if particle goes off the top
+          if (newY < 0) {
+            newY = 100;
+            return {
+              ...particle,
+              x: Math.random() * 100,
+              y: newY,
+              size: Math.random() * 3 + 1,
+              speed: Math.random() * 1 + 0.2
+            };
+          }
+          
+          return { ...particle, y: newY };
+        })
+      );
+    }, 50);
+    
+    return () => clearInterval(interval);
+  }, [isPlaying, preset, particles]);
   
   return (
-    <div className="waveform h-20 my-6 px-4">
-      {bars.map((bar, index) => (
-        <div
-          key={index}
-          className={cn(
-            "waveform-bar transition-all duration-300",
-            isPlaying ? "animate-wave" : "h-1",
-            bar.color || ""
-          )}
-          style={{ 
-            height: isPlaying ? `${bar.height}px` : '4px',
-            animationDelay: `${bar.delay * 0.1}s`
-          }}
-        />
-      ))}
+    <div className="relative h-20 my-6">
+      {/* Alien-specific background effect */}
+      {preset === 'alien' && isPlaying && (
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-purple-900/20 overflow-hidden rounded-lg">
+          {/* Floating particles */}
+          {particles.map((particle, index) => (
+            <div 
+              key={index} 
+              className="absolute rounded-full animate-pulse"
+              style={{
+                left: `${particle.x}%`,
+                top: `${particle.y}%`,
+                width: `${particle.size}px`,
+                height: `${particle.size}px`,
+                backgroundColor: particle.color,
+                boxShadow: `0 0 ${particle.size * 2}px ${particle.color}`,
+                opacity: isPlaying ? 0.8 : 0,
+                transition: 'opacity 0.5s ease'
+              }}
+            />
+          ))}
+          
+          {/* Subtle sparkle effect */}
+          <div className="absolute right-3 top-3 text-purple-300/50 animate-pulse">
+            <Sparkles size={20} />
+          </div>
+        </div>
+      )}
+      
+      {/* Waveform bars */}
+      <div className="waveform h-full px-4 relative">
+        {bars.map((bar, index) => (
+          <div
+            key={index}
+            className={cn(
+              "waveform-bar transition-all duration-300",
+              isPlaying ? "animate-wave" : "h-1",
+              bar.color || "",
+              preset === 'alien' && isPlaying ? "alien-bar" : ""
+            )}
+            style={{ 
+              height: isPlaying ? `${bar.height}px` : '4px',
+              animationDelay: `${bar.delay * 0.1}s`
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 };
