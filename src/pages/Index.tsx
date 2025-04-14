@@ -9,6 +9,7 @@ import VisualizerSection from '@/components/VisualizerSection';
 import PresetSelection from '@/components/PresetSelection';
 import ControlPanel from '@/components/ControlPanel';
 import InfoBanners from '@/components/InfoBanners';
+import LucidDreamingControls from '@/components/LucidDreamingControls';
 
 const Index = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -53,9 +54,37 @@ const Index = () => {
         // Stop current playback before changing settings
         audioEngine.stop();
         
-        // For alien preset, use the specialized setup
+        // For special presets
         if (presetId === 'alien') {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, 'alien');
+        } else if (presetId.startsWith('lucid-')) {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
+          
+          if (presetId === 'lucid-basic') {
+            toast({
+              title: "Lucid Dreaming Mode",
+              description: "Basic theta entrainment for dream awareness. Use headphones for best results.",
+              duration: 5000,
+            });
+          } else if (presetId === 'lucid-advanced') {
+            toast({
+              title: "Advanced Lucid Dreaming",
+              description: "Theta-alpha mix for deeper dream control. Check reality check options below.",
+              duration: 5000,
+            });
+          } else if (presetId === 'lucid-gamma') {
+            toast({
+              title: "Gamma-Enhanced Dreams",
+              description: "Added gamma components to mimic lucid dream brain activity.",
+              duration: 5000,
+            });
+          } else if (presetId === 'lucid-wbtb') {
+            toast({
+              title: "WBTB Mode Activated",
+              description: "Use the WBTB timer below for optimal timing.",
+              duration: 5000,
+            });
+          }
         } else {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume);
         }
@@ -83,6 +112,14 @@ const Index = () => {
               title: "Alien Summoning Activated",
               description: "Please ensure you have taken proper interdimensional precautions.",
               variant: "destructive",
+              duration: 5000,
+            });
+          } else if (selectedPreset.startsWith('lucid-')) {
+            audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, selectedPreset);
+            
+            toast({
+              title: "Lucid Dreaming Mode Activated",
+              description: "For best results, use before sleep or during a WBTB session.",
               duration: 5000,
             });
           } else {
@@ -123,6 +160,8 @@ const Index = () => {
     });
   }, [toast]);
   
+  const isLucidDreamingPreset = selectedPreset && selectedPreset.startsWith('lucid-');
+  
   return (
     <Layout>
       <div className="space-y-8">
@@ -148,6 +187,13 @@ const Index = () => {
               onTimerEnd={handleTimerEnd}
               isPlaying={isPlaying}
             />
+            
+            {isLucidDreamingPreset && (
+              <LucidDreamingControls 
+                isPlaying={isPlaying}
+                selectedPreset={selectedPreset}
+              />
+            )}
           </div>
           
           <div className="md:col-span-2">
@@ -159,8 +205,6 @@ const Index = () => {
             />
           </div>
         </div>
-        
-        <InfoBanners />
       </div>
     </Layout>
   );
