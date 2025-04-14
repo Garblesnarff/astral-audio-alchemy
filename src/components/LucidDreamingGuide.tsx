@@ -8,6 +8,11 @@ interface LucidDreamingGuideProps {
 }
 
 const LucidDreamingGuide: React.FC<LucidDreamingGuideProps> = ({ selectedPreset }) => {
+  // If the selectedPreset is not a lucid dreaming preset, don't render anything
+  if (!selectedPreset || !selectedPreset.startsWith('lucid-')) {
+    return null;
+  }
+  
   let guideContent;
 
   switch (selectedPreset) {
@@ -18,7 +23,7 @@ const LucidDreamingGuide: React.FC<LucidDreamingGuideProps> = ({ selectedPreset 
         steps: [
           'Find a quiet, comfortable place to rest',
           'Focus on your intention to become aware in your dreams',
-          'As you fall asleep, repeat: "I will know I'm dreaming"',
+          "As you fall asleep, repeat: \"I will know I'm dreaming\"",
           'When in a dream, look for dream signs - things that seem unusual'
         ],
         tips: [
@@ -74,7 +79,7 @@ const LucidDreamingGuide: React.FC<LucidDreamingGuideProps> = ({ selectedPreset 
         ],
         tips: [
           'WBTB has one of the highest success rates for lucid dreaming',
-          'Don't check your phone during the wake period (blue light)',
+          "Don't check your phone during the wake period (blue light)",
           'Keep a dim light on while awake to not fully wake up'
         ]
       };
