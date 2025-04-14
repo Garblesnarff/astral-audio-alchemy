@@ -27,7 +27,7 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
       <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
         <div className="bg-card rounded-lg p-1 overflow-hidden">
           <TabsList className="grid grid-cols-4 sm:grid-cols-4 gap-2 w-full mx-0 px-0 h-37 py-0">
-            {categories.map(category => <TabsTrigger key={category} value={category} className="capitalize py-3.5 px-1 text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">
+            {categories.map(category => <TabsTrigger key={category} value={category} className="capitalize py-3.5 px-1 text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis text-inherit bg-slate-900 hover:bg-slate-800">
                 {category === 'special' ? '👽' : category === 'lucid' ? '💤' : category === 'astral' ? '🚀' : category === 'remote' ? '🔭' : category}
               </TabsTrigger>)}
           </TabsList>
