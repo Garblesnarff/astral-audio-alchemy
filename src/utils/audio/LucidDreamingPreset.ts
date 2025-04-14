@@ -1,22 +1,22 @@
-import { AudioEngineBase } from './AudioEngineBase';
 
-export class LucidDreamingPreset extends AudioEngineBase {
-  private leftOscillator: OscillatorNode | null = null;
-  private rightOscillator: OscillatorNode | null = null;
-  private leftGain: GainNode | null = null;
-  private rightGain: GainNode | null = null;
+import { LucidDreamingBase } from './lucid/LucidDreamingBase';
+import { setupThetaWaves } from './lucid/thetaWaveGenerator';
+import { setupThetaAlphaMix } from './lucid/alphaMixGenerator';
+import { setupWithGamma } from './lucid/gammaGenerator';
+import { createDreamStabilization } from './lucid/dreamStabilization';
+import { RealityCheckSystem } from './lucid/realityCheckSystem';
+import { WBTBSystem } from './lucid/wbtbSystem';
+
+export class LucidDreamingPreset extends LucidDreamingBase {
   private alphaOscillator: OscillatorNode | null = null;
   private alphaGain: GainNode | null = null;
   private gammaOscillator: OscillatorNode | null = null;
   private gammaGain: GainNode | null = null;
-  private realityCheckTimer: number | null = null;
-  private realityCheckSound: OscillatorNode | null = null;
-  private realityCheckGain: GainNode | null = null;
-  private realityCheckInterval: number = 15; // minutes
-  private wbtbTimer: number | null = null;
-  private isWBTBMode: boolean = false;
   private dreamStabilizationOsc: OscillatorNode | null = null;
   private dreamStabilizationGain: GainNode | null = null;
+  private realityCheckSystem: RealityCheckSystem | null = null;
+  private wbtbSystem: WBTBSystem | null = null;
+  private isWBTBMode: boolean = false;
 
   start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'basic') {
     if (!this.audioContext) {
@@ -29,6 +29,13 @@ export class LucidDreamingPreset extends AudioEngineBase {
     this.baseFrequency = baseFreq;
     this.beatFrequency = beatFreq;
     this.baseVolume = volume;
+    
+    this.masterGain = this.audioContext.createGain();
+    this.masterGain.gain.value = volume;
+    
+    // Initialize timer systems
+    this.realityCheckSystem = new RealityCheckSystem(this.audioContext, this.analyser!, volume);
+    this.wbtbSystem = new WBTBSystem(this.audioContext, this.analyser!, volume);
     
     switch (preset) {
       case 'basic':
@@ -49,66 +56,60 @@ export class LucidDreamingPreset extends AudioEngineBase {
   }
   
   private setupThetaWaves(baseFreq: number, beatFreq: number) {
-    if (!this.audioContext || !this.analyser) return;
+    if (!this.audioContext || !this.analyser || !this.masterGain) return;
     
-    this.leftOscillator = this.audioContext.createOscillator();
-    this.rightOscillator = this.audioContext.createOscillator();
+    const { leftOscillator, rightOscillator, leftGain, rightGain } = setupThetaWaves(
+      this, baseFreq, beatFreq, this.audioContext, this.analyser, this.masterGain, this.baseVolume
+    );
     
-    this.leftGain = this.audioContext.createGain();
-    this.rightGain = this.audioContext.createGain();
-    
-    this.leftOscillator.frequency.value = baseFreq;
-    this.rightOscillator.frequency.value = baseFreq + beatFreq;
-    
-    this.leftGain.gain.value = this.baseVolume;
-    this.rightGain.gain.value = this.baseVolume;
-    
-    this.leftOscillator.connect(this.leftGain);
-    this.rightOscillator.connect(this.rightGain);
-    
-    this.leftGain.connect(this.masterGain);
-    this.rightGain.connect(this.masterGain);
-    
-    this.masterGain.connect(this.analyser);
-    
-    this.leftOscillator.start();
-    this.rightOscillator.start();
+    this.leftOscillator = leftOscillator;
+    this.rightOscillator = rightOscillator;
+    this.leftGain = leftGain;
+    this.rightGain = rightGain;
     
     this.addDreamStabilization();
   }
   
   private setupThetaAlphaMix(baseFreq: number, beatFreq: number) {
-    this.setupThetaWaves(baseFreq, beatFreq);
+    if (!this.audioContext || !this.analyser || !this.masterGain) return;
     
-    if (!this.audioContext || !this.analyser) return;
+    const { 
+      leftOscillator, rightOscillator, leftGain, rightGain, 
+      alphaOscillator, alphaGain 
+    } = setupThetaAlphaMix(
+      this, baseFreq, beatFreq, this.audioContext, this.analyser, this.masterGain, this.baseVolume
+    );
     
-    this.alphaOscillator = this.audioContext.createOscillator();
-    this.alphaGain = this.audioContext.createGain();
+    this.leftOscillator = leftOscillator;
+    this.rightOscillator = rightOscillator;
+    this.leftGain = leftGain;
+    this.rightGain = rightGain;
+    this.alphaOscillator = alphaOscillator;
+    this.alphaGain = alphaGain;
     
-    this.alphaOscillator.frequency.value = baseFreq + 10;
-    this.alphaGain.gain.value = this.baseVolume * 0.4;
-    
-    this.alphaOscillator.connect(this.alphaGain);
-    this.alphaGain.connect(this.masterGain as GainNode);
-    
-    this.alphaOscillator.start();
+    this.addDreamStabilization();
   }
   
   private setupWithGamma(baseFreq: number, beatFreq: number) {
-    this.setupThetaAlphaMix(baseFreq, beatFreq);
+    if (!this.audioContext || !this.analyser || !this.masterGain) return;
     
-    if (!this.audioContext || !this.analyser) return;
+    const { 
+      leftOscillator, rightOscillator, leftGain, rightGain, 
+      alphaOscillator, alphaGain, gammaOscillator, gammaGain 
+    } = setupWithGamma(
+      this, baseFreq, beatFreq, this.audioContext, this.analyser, this.masterGain, this.baseVolume
+    );
     
-    this.gammaOscillator = this.audioContext.createOscillator();
-    this.gammaGain = this.audioContext.createGain();
+    this.leftOscillator = leftOscillator;
+    this.rightOscillator = rightOscillator;
+    this.leftGain = leftGain;
+    this.rightGain = rightGain;
+    this.alphaOscillator = alphaOscillator;
+    this.alphaGain = alphaGain;
+    this.gammaOscillator = gammaOscillator;
+    this.gammaGain = gammaGain;
     
-    this.gammaOscillator.frequency.value = baseFreq + 40;
-    this.gammaGain.gain.value = this.baseVolume * 0.25;
-    
-    this.gammaOscillator.connect(this.gammaGain);
-    this.gammaGain.connect(this.masterGain as GainNode);
-    
-    this.gammaOscillator.start();
+    this.addDreamStabilization();
   }
   
   private setupWBTB(baseFreq: number, beatFreq: number) {
@@ -119,93 +120,29 @@ export class LucidDreamingPreset extends AudioEngineBase {
   private addDreamStabilization() {
     if (!this.audioContext || !this.masterGain) return;
     
-    this.dreamStabilizationOsc = this.audioContext.createOscillator();
-    this.dreamStabilizationGain = this.audioContext.createGain();
+    const { dreamStabilizationOsc, dreamStabilizationGain } = createDreamStabilization(
+      this.audioContext, this.masterGain, this.baseVolume
+    );
     
-    this.dreamStabilizationOsc.frequency.value = 0.2; 
-    this.dreamStabilizationGain.gain.value = this.baseVolume * 0.1;
-    
-    this.dreamStabilizationOsc.connect(this.dreamStabilizationGain);
-    this.dreamStabilizationGain.connect(this.masterGain);
-    
-    this.dreamStabilizationOsc.start();
+    this.dreamStabilizationOsc = dreamStabilizationOsc;
+    this.dreamStabilizationGain = dreamStabilizationGain;
   }
   
   enableRealityCheck(intervalMinutes: number = 15) {
-    this.realityCheckInterval = intervalMinutes;
-    this.scheduleNextRealityCheck();
+    this.realityCheckSystem?.enableRealityCheck(intervalMinutes);
   }
   
-  private scheduleNextRealityCheck() {
-    if (this.realityCheckTimer) {
-      window.clearTimeout(this.realityCheckTimer);
-    }
-    
-    this.realityCheckTimer = window.setTimeout(() => {
-      this.playRealityCheckSound();
-      this.scheduleNextRealityCheck();
-    }, this.realityCheckInterval * 60 * 1000);
-  }
-  
-  private playRealityCheckSound() {
-    if (!this.audioContext || !this.analyser || !this.isPlaying) return;
-    
-    const checkOsc = this.audioContext.createOscillator();
-    const checkGain = this.audioContext.createGain();
-    
-    checkOsc.frequency.value = 800;
-    checkGain.gain.value = this.baseVolume * 0.5;
-    
-    checkOsc.connect(checkGain);
-    checkGain.connect(this.analyser);
-    
-    checkOsc.start();
-    
-    checkGain.gain.setValueAtTime(this.baseVolume * 0.5, this.audioContext.currentTime);
-    checkGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.5);
-    
-    setTimeout(() => {
-      checkOsc.stop();
-      checkOsc.disconnect();
-      checkGain.disconnect();
-    }, 500);
+  disableRealityCheck() {
+    this.realityCheckSystem?.disableRealityCheck();
   }
   
   startWBTBTimer(wakeUpAfterMinutes: number) {
     if (!this.isWBTBMode) return;
-    
-    if (this.wbtbTimer) {
-      window.clearTimeout(this.wbtbTimer);
-    }
-    
-    this.wbtbTimer = window.setTimeout(() => {
-      this.playWakeUpSequence();
-    }, wakeUpAfterMinutes * 60 * 1000);
+    this.wbtbSystem?.startWBTBTimer(wakeUpAfterMinutes);
   }
   
-  private playWakeUpSequence() {
-    if (!this.audioContext || !this.analyser || !this.isPlaying) return;
-    
-    const wakeupOsc = this.audioContext.createOscillator();
-    const wakeupGain = this.audioContext.createGain();
-    
-    wakeupOsc.frequency.value = 400;
-    wakeupGain.gain.value = 0.001;
-    
-    wakeupOsc.connect(wakeupGain);
-    wakeupGain.connect(this.analyser);
-    
-    wakeupOsc.start();
-    wakeupGain.gain.exponentialRampToValueAtTime(this.baseVolume, this.audioContext.currentTime + 15);
-    
-    setTimeout(() => {
-      wakeupGain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 5);
-      setTimeout(() => {
-        wakeupOsc.stop();
-        wakeupOsc.disconnect();
-        wakeupGain.disconnect();
-      }, 5000);
-    }, 20000);
+  cancelWBTB() {
+    this.wbtbSystem?.cancelWBTB();
   }
   
   setVolume(volume: number) {
@@ -226,77 +163,38 @@ export class LucidDreamingPreset extends AudioEngineBase {
     if (this.dreamStabilizationGain) {
       this.dreamStabilizationGain.gain.value = volume * 0.1;
     }
+    
+    // Update volume for timer systems
+    this.realityCheckSystem?.updateVolume(volume);
+    this.wbtbSystem?.updateVolume(volume);
   }
   
   stop() {
     if (this.isPlaying) {
-      this.stopOscillator(this.leftOscillator);
-      this.stopOscillator(this.rightOscillator);
+      // Stop and disconnect all oscillators
+      super.stop();
       this.stopOscillator(this.alphaOscillator);
       this.stopOscillator(this.gammaOscillator);
       this.stopOscillator(this.dreamStabilizationOsc);
-      this.stopOscillator(this.realityCheckSound);
       
-      this.disconnectNode(this.leftGain);
-      this.disconnectNode(this.rightGain);
+      // Disconnect all gain nodes
       this.disconnectNode(this.alphaGain);
       this.disconnectNode(this.gammaGain);
-      this.disconnectNode(this.masterGain);
       this.disconnectNode(this.dreamStabilizationGain);
-      this.disconnectNode(this.realityCheckGain);
       
-      if (this.realityCheckTimer) {
-        window.clearTimeout(this.realityCheckTimer);
-        this.realityCheckTimer = null;
-      }
+      // Clean up timer systems
+      this.disableRealityCheck();
+      this.cancelWBTB();
       
-      if (this.wbtbTimer) {
-        window.clearTimeout(this.wbtbTimer);
-        this.wbtbTimer = null;
-      }
-      
-      this.leftOscillator = null;
-      this.rightOscillator = null;
-      this.leftGain = null;
-      this.rightGain = null;
+      // Reset all oscillators and gain nodes
       this.alphaOscillator = null;
       this.alphaGain = null;
       this.gammaOscillator = null;
       this.gammaGain = null;
       this.dreamStabilizationOsc = null;
       this.dreamStabilizationGain = null;
-      this.realityCheckSound = null;
-      this.realityCheckGain = null;
       
-      this.isPlaying = false;
       this.isWBTBMode = false;
-    }
-  }
-  
-  private stopOscillator(oscillator: OscillatorNode | null) {
-    if (oscillator) {
-      oscillator.stop();
-      oscillator.disconnect();
-    }
-  }
-  
-  private disconnectNode(node: AudioNode | null) {
-    if (node) {
-      node.disconnect();
-    }
-  }
-  
-  disableRealityCheck() {
-    if (this.realityCheckTimer) {
-      window.clearTimeout(this.realityCheckTimer);
-      this.realityCheckTimer = null;
-    }
-  }
-  
-  cancelWBTB() {
-    if (this.wbtbTimer) {
-      window.clearTimeout(this.wbtbTimer);
-      this.wbtbTimer = null;
     }
   }
 }
