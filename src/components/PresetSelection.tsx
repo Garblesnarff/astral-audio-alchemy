@@ -30,17 +30,21 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
   
   return (
     <Tabs defaultValue={currentTab} onValueChange={onTabChange}>
-      <TabsList className="grid grid-cols-5">
+      <TabsList className="grid grid-cols-6 gap-1">
         {categories.map((category) => (
           <TabsTrigger key={category} value={category} className="capitalize">
-            {category === 'special' ? '👽' : category}
+            {category === 'special' ? '👽' : category === 'lucid' ? '💤' : category}
           </TabsTrigger>
         ))}
       </TabsList>
       
       {categories.map((category) => (
         <TabsContent key={category} value={category} className="p-0 mt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className={`grid ${
+            category === 'lucid' 
+              ? 'grid-cols-2 gap-4' 
+              : 'grid-cols-1 sm:grid-cols-2 gap-4'
+          }`}>
             {presetsByCategory[category].map((preset) => (
               <PresetCard
                 key={preset.id}
@@ -57,3 +61,4 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
 };
 
 export default PresetSelection;
+
