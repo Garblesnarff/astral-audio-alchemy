@@ -24,9 +24,43 @@ export class RemoteViewingPreset extends AudioEngineBase {
   private audioChunks: Blob[] = [];
   private recordingStream: MediaStream | null = null;
   
+  // Add properties needed for audio generation
+  protected leftGain: GainNode | null = null;
+  protected rightGain: GainNode | null = null;
+  protected volume: number = 0.5;
+  
   constructor() {
     super();
     this.currentPreset = 'remote-theta-delta';
+  }
+  
+  /**
+   * Initialize the audio context
+   */
+  override initialize(): boolean {
+    const result = super.initialize();
+    
+    if (result && this.audioContext) {
+      // Create gain nodes for left and right channels
+      this.leftGain = this.audioContext.createGain();
+      this.rightGain = this.audioContext.createGain();
+      
+      // Create master gain node
+      this.masterGain = this.audioContext.createGain();
+      
+      // Connect the channel gains to the master gain
+      this.leftGain.connect(this.masterGain);
+      this.rightGain.connect(this.masterGain);
+      
+      // Connect master gain to the analyser
+      if (this.analyser) {
+        this.masterGain.connect(this.analyser);
+      }
+      
+      return true;
+    }
+    
+    return false;
   }
   
   /**
@@ -44,7 +78,7 @@ export class RemoteViewingPreset extends AudioEngineBase {
     this.volume = volume;
     this.currentPreset = preset;
     
-    if (this.audioContext) {
+    if (this.audioContext && this.leftGain && this.rightGain) {
       // Based on the preset, start the appropriate oscillators
       switch (preset) {
         case 'remote-theta-delta':
@@ -52,8 +86,8 @@ export class RemoteViewingPreset extends AudioEngineBase {
             this.audioContext,
             this.baseFrequency,
             this.beatFrequency,
-            this.leftGain!,
-            this.rightGain!
+            this.leftGain,
+            this.rightGain
           );
           break;
         case 'remote-alpha':
@@ -61,8 +95,8 @@ export class RemoteViewingPreset extends AudioEngineBase {
             this.audioContext,
             this.baseFrequency,
             this.beatFrequency,
-            this.leftGain!,
-            this.rightGain!
+            this.leftGain,
+            this.rightGain
           );
           break;
         case 'remote-beta-theta':
@@ -70,8 +104,8 @@ export class RemoteViewingPreset extends AudioEngineBase {
             this.audioContext,
             this.baseFrequency,
             this.beatFrequency,
-            this.leftGain!,
-            this.rightGain!
+            this.leftGain,
+            this.rightGain
           );
           break;
         case 'remote-focused':
@@ -80,8 +114,8 @@ export class RemoteViewingPreset extends AudioEngineBase {
             this.audioContext,
             this.baseFrequency,
             this.beatFrequency,
-            this.leftGain!,
-            this.rightGain!
+            this.leftGain,
+            this.rightGain
           );
           this.targetFocusNodes = targetFocusMarkers(
             this.audioContext,
@@ -121,8 +155,8 @@ export class RemoteViewingPreset extends AudioEngineBase {
             this.audioContext,
             this.baseFrequency,
             this.beatFrequency,
-            this.leftGain!,
-            this.rightGain!
+            this.leftGain,
+            this.rightGain
           );
       }
       
