@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Sparkles } from 'lucide-react';
@@ -64,6 +63,115 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
       if (isPlaying) {
         initializeParticles();
       }
+    } else if (preset.startsWith('astral-')) {
+      // Enhanced visualization for astral projection presets
+      const newBars = Array.from({ length: totalBars }).map((_, i) => {
+        let height, delay, color;
+        
+        // Assign different patterns for different astral projection patterns
+        if (preset === 'astral-deep-theta') {
+          // Deep theta pattern (6.3 Hz)
+          if (i % 7 === 0) {
+            height = Math.random() * 80 + 35;
+            delay = i % 3;
+            color = 'bg-fuchsia-500';
+          } else if (i % 3 === 0) {
+            height = Math.random() * 60 + 20;
+            delay = i % 5;
+            color = 'bg-indigo-400';
+          } else {
+            height = Math.random() * 40 + 10;
+            delay = i % 6;
+            color = 'bg-purple-400';
+          }
+        } else if (preset === 'astral-epsilon-lambda') {
+          // Epsilon-Lambda mix pattern
+          if (i % 11 === 0) {
+            height = Math.random() * 90 + 30; // Lambda spikes
+            delay = i % 2;
+            color = 'bg-fuchsia-500';
+          } else if (i % 12 === 0) {
+            height = Math.random() * 75 + 40; // Secondary lambda
+            delay = i % 3;
+            color = 'bg-violet-500';
+          } else {
+            // Epsilon ultra-low baseline
+            height = Math.random() * 20 + 5;
+            delay = i % 7;
+            color = 'bg-indigo-400';
+          }
+        } else if (preset === 'astral-777hz') {
+          // 777 Hz special frequency pattern
+          if (i % 7 === 0) {
+            height = Math.random() * 85 + 40;
+            delay = i % 2;
+            color = 'bg-amber-400';
+          } else if (i % 3 === 0) {
+            height = Math.random() * 60 + 30;
+            delay = i % 4;
+            color = 'bg-fuchsia-500';
+          } else if (i % 5 === 0) {
+            height = Math.random() * 70 + 25;
+            delay = i % 3;
+            color = 'bg-violet-400';
+          } else {
+            height = Math.random() * 35 + 10;
+            delay = i % 5;
+            color = 'bg-indigo-400';
+          }
+        } else if (preset === 'astral-vibrational') {
+          // Vibrational stage pattern - more chaotic
+          const phase = Math.sin(i * 0.1) * 0.5 + 0.5; // Value between 0-1
+          height = Math.random() * 40 + 20 + phase * 60;
+          delay = i % 4;
+          
+          if (height > 70) {
+            color = 'bg-fuchsia-500';
+          } else if (height > 50) {
+            color = 'bg-violet-500';
+          } else if (height > 30) {
+            color = 'bg-indigo-400';
+          } else {
+            color = 'bg-purple-400';
+          }
+        } else if (preset === 'astral-progressive') {
+          // Progressive sequence - combination of patterns
+          if (i % 8 === 0) {
+            height = Math.random() * 85 + 40;
+            delay = i % 3;
+            color = 'bg-fuchsia-500';
+          } else if (i % 7 === 0) {
+            height = Math.random() * 70 + 30;
+            delay = i % 2;
+            color = 'bg-violet-500';
+          } else if (i % 5 === 0) {
+            height = Math.random() * 60 + 20;
+            delay = i % 4;
+            color = 'bg-indigo-400';
+          } else if (i % 3 === 0) {
+            height = Math.random() * 50 + 15;
+            delay = i % 5;
+            color = 'bg-purple-400';
+          } else {
+            height = Math.random() * 30 + 10;
+            delay = i % 6;
+            color = 'bg-blue-400';
+          }
+        } else {
+          // Default astral pattern
+          height = Math.random() * 60 + 10;
+          delay = i % 5;
+          color = 'bg-fuchsia-400';
+        }
+        
+        return { height, delay, color };
+      });
+      setBars(newBars);
+      
+      // Initialize particles for astral preset
+      if (isPlaying) {
+        initializeAstralParticles();
+      }
     } else {
       // Default visualization for other presets
       const newBars = Array.from({ length: totalBars }).map((_, i) => {
@@ -100,6 +208,33 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
       'rgba(96, 165, 250, 0.8)',  // blue
       'rgba(252, 211, 77, 0.8)',  // amber
       'rgba(248, 113, 113, 0.8)'  // red
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+  
+  // Initialize particles for the astral effect
+  const initializeAstralParticles = () => {
+    const particleCount = 40;
+    const newParticles = Array.from({ length: particleCount }).map(() => {
+      return {
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 1,
+        speed: Math.random() * 0.8 + 0.2,
+        color: getRandomAstralColor()
+      };
+    });
+    setParticles(newParticles);
+  };
+  
+  // Get random color for astral particles
+  const getRandomAstralColor = () => {
+    const colors = [
+      'rgba(217, 70, 239, 0.6)',  // fuchsia
+      'rgba(147, 51, 234, 0.6)',  // purple
+      'rgba(124, 58, 237, 0.6)',  // violet
+      'rgba(99, 102, 241, 0.6)',  // indigo
+      'rgba(255, 186, 144, 0.5)'  // amber/subtle orange
     ];
     return colors[Math.floor(Math.random() * colors.length)];
   };
@@ -164,6 +299,34 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         </div>
       )}
       
+      {/* Astral projection specific background effect */}
+      {preset.startsWith('astral-') && isPlaying && (
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-fuchsia-900/10 overflow-hidden rounded-lg">
+          {/* Floating particles */}
+          {particles.map((particle, index) => (
+            <div 
+              key={index} 
+              className="absolute rounded-full animate-pulse"
+              style={{
+                left: `${particle.x}%`,
+                top: `${particle.y}%`,
+                width: `${particle.size}px`,
+                height: `${particle.size}px`,
+                backgroundColor: particle.color,
+                boxShadow: `0 0 ${particle.size * 3}px ${particle.color}`,
+                opacity: isPlaying ? 0.8 : 0,
+                transition: 'opacity 0.5s ease'
+              }}
+            />
+          ))}
+          
+          {/* Subtle sparkle effect */}
+          <div className="absolute right-3 top-3 text-fuchsia-300/50 animate-pulse">
+            <Sparkles size={20} />
+          </div>
+        </div>
+      )}
+      
       {/* Waveform bars */}
       <div className="waveform h-full px-4 relative">
         {bars.map((bar, index) => (
@@ -173,7 +336,9 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
               "waveform-bar transition-all duration-300",
               isPlaying ? "animate-wave" : "h-1",
               bar.color || "",
-              preset === 'alien' && isPlaying ? "alien-bar" : ""
+              preset === 'alien' && isPlaying ? "alien-bar" : "",
+              preset.startsWith('lucid-') && isPlaying ? "lucid-bar" : "",
+              preset.startsWith('astral-') && isPlaying ? "astral-bar" : ""
             )}
             style={{ 
               height: isPlaying ? `${bar.height}px` : '4px',

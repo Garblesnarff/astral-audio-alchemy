@@ -53,6 +53,10 @@ export function useAudioState() {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
           
           handleLucidPresetToast(presetId);
+        } else if (presetId.startsWith('astral-')) {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
+          
+          handleAstralPresetToast(presetId);
         } else {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume);
         }
@@ -89,6 +93,40 @@ export function useAudioState() {
     }
   };
   
+  const handleAstralPresetToast = (presetId: string) => {
+    if (presetId === 'astral-deep-theta') {
+      toast({
+        title: "Deep Theta Astral Mode",
+        description: "Focused 6.3 Hz frequency for astral travel. Use headphones for best results.",
+        duration: 5000,
+      });
+    } else if (presetId === 'astral-epsilon-lambda') {
+      toast({
+        title: "Epsilon-Lambda Mix",
+        description: "Combined ultra-low and high frequencies for enhanced separation experience.",
+        duration: 5000,
+      });
+    } else if (presetId === 'astral-777hz') {
+      toast({
+        title: "777 Hz Cosmic Frequency",
+        description: "Special frequency associated with spiritual and astral connections.",
+        duration: 5000,
+      });
+    } else if (presetId === 'astral-vibrational') {
+      toast({
+        title: "Vibrational Stage Support",
+        description: "Progressive frequencies to help navigate through the vibrational phase.",
+        duration: 5000,
+      });
+    } else if (presetId === 'astral-progressive') {
+      toast({
+        title: "Full Astral Journey Activated",
+        description: "This guided sequence will take you through all phases of astral projection.",
+        duration: 5000,
+      });
+    }
+  };
+  
   const togglePlay = useCallback(() => {
     if (isPlaying) {
       audioEngine.stop();
@@ -116,6 +154,14 @@ export function useAudioState() {
             toast({
               title: "Lucid Dreaming Mode Activated",
               description: "For best results, use before sleep or during a WBTB session.",
+              duration: 5000,
+            });
+          } else if (selectedPreset.startsWith('astral-')) {
+            audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, selectedPreset);
+            
+            toast({
+              title: "Astral Projection Mode Activated",
+              description: "For best results, lay flat on your back in a quiet, dark environment.",
               duration: 5000,
             });
           } else {

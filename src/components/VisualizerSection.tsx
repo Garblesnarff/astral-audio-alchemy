@@ -11,19 +11,27 @@ interface VisualizerSectionProps {
 const VisualizerSection: React.FC<VisualizerSectionProps> = ({ isPlaying, selectedPreset }) => {
   const isAlien = selectedPreset === 'alien';
   const isLucidDreaming = selectedPreset && selectedPreset.startsWith('lucid-');
+  const isAstralProjection = selectedPreset && selectedPreset.startsWith('astral-');
   
   return (
     <div className="relative space-y-2">
-      <div className={`transition-all duration-500 ${isAlien ? 'opacity-85 border-purple-500' : isLucidDreaming ? 'opacity-90 border-indigo-500' : 'opacity-100'}`}>
+      <div className={`transition-all duration-500 ${
+        isAlien ? 'opacity-85 border-purple-500' : 
+        isLucidDreaming ? 'opacity-90 border-indigo-500' :
+        isAstralProjection ? 'opacity-95 border-fuchsia-500' :
+        'opacity-100'}`}
+      >
         <FrequencyVisualizer isPlaying={isPlaying} />
       </div>
       <div 
         className={`transition-all duration-500 ${
           isAlien 
-            ? 'border border-purple-500/30 rounded-lg p-2 bg-black/10 alien-pulse backdrop-blur-sm' 
+            ? 'border border-purple-500/30 rounded-lg p-2 bg-black/10 alien-pulse backdrop-blur-sm'
             : isLucidDreaming 
-              ? 'border border-indigo-500/40 rounded-lg p-2 bg-indigo-950/10 lucid-pulse backdrop-blur-sm' 
-              : ''
+              ? 'border border-indigo-500/40 rounded-lg p-2 bg-indigo-950/10 lucid-pulse backdrop-blur-sm'
+              : isAstralProjection
+                ? 'border border-fuchsia-500/30 rounded-lg p-2 bg-gradient-to-r from-indigo-950/20 to-fuchsia-950/20 astral-pulse backdrop-blur-sm'
+                : ''
         }`}
       >
         {isAlien && isPlaying && (
@@ -35,6 +43,12 @@ const VisualizerSection: React.FC<VisualizerSectionProps> = ({ isPlaying, select
         {isLucidDreaming && isPlaying && (
           <div className="absolute -top-2 -right-2 px-2 py-1 bg-indigo-500 text-white text-xs rounded-full animate-pulse z-10">
             Lucid Dream Induction Active
+          </div>
+        )}
+        
+        {isAstralProjection && isPlaying && (
+          <div className="absolute -top-2 -right-2 px-2 py-1 bg-fuchsia-600 text-white text-xs rounded-full animate-pulse z-10">
+            Astral Projection Active
           </div>
         )}
         
@@ -65,6 +79,32 @@ const VisualizerSection: React.FC<VisualizerSectionProps> = ({ isPlaying, select
                 }}
               />
             ))}
+          </div>
+        </div>
+      )}
+      
+      {isAstralProjection && isPlaying && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -bottom-10 left-0 w-full h-20 bg-gradient-to-t from-fuchsia-900/20 to-transparent" />
+          
+          {/* Astral particles effect */}
+          <div className="astral-particles">
+            {Array.from({ length: 25 }).map((_, i) => (
+              <div 
+                key={i}
+                className="absolute w-1 h-1 rounded-full bg-fuchsia-300/40 astral-particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 15}s`,
+                  animationDuration: `${15 + Math.random() * 25}s`,
+                  transform: `scale(${0.5 + Math.random() * 2})`
+                }}
+              />
+            ))}
+            
+            {/* Subtle ethereal fog */}
+            <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-fuchsia-800/5 opacity-50 mix-blend-screen" />
           </div>
         </div>
       )}

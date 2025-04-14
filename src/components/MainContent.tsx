@@ -5,6 +5,8 @@ import AudioControls from '@/components/AudioControls';
 import ControlPanel from '@/components/ControlPanel';
 import PresetSelection from '@/components/PresetSelection';
 import LucidDreamingControls from '@/components/LucidDreamingControls';
+import AstralProjectionControls from '@/components/AstralProjectionControls';
+import AstralProjectionGuide from '@/components/AstralProjectionGuide';
 
 interface MainContentProps {
   isPlaying: boolean;
@@ -38,6 +40,7 @@ const MainContent: React.FC<MainContentProps> = ({
   setCurrentTab
 }) => {
   const isLucidDreamingPreset = selectedPreset && selectedPreset.startsWith('lucid-');
+  const isAstralProjectionPreset = selectedPreset && selectedPreset.startsWith('astral-');
   
   return (
     <div className="space-y-8">
@@ -68,15 +71,26 @@ const MainContent: React.FC<MainContentProps> = ({
               selectedPreset={selectedPreset}
             />
           )}
+          
+          {isAstralProjectionPreset && (
+            <AstralProjectionControls 
+              isPlaying={isPlaying}
+              selectedPreset={selectedPreset}
+            />
+          )}
         </div>
         
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 space-y-6">
           <PresetSelection
             selectedPreset={selectedPreset}
             onSelectPreset={handleSelectPreset}
             currentTab={currentTab}
             onTabChange={setCurrentTab}
           />
+          
+          {isAstralProjectionPreset && (
+            <AstralProjectionGuide selectedPreset={selectedPreset} />
+          )}
         </div>
       </div>
     </div>
