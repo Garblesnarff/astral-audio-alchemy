@@ -15,6 +15,22 @@ interface TargetTimerTabProps {
     integrationSeconds: number;
     clearingSeconds: number;
   }) => void;
+  isPlaybackActive?: boolean;
+  isRemoteViewingPreset?: boolean;
+  targetFocusConfig?: {
+    countdownSeconds: number;
+    focusSeconds: number;
+    reportingSeconds: number;
+    integrationSeconds: number;
+    clearingSeconds: number;
+  };
+  setTargetFocusConfig?: React.Dispatch<React.SetStateAction<{
+    countdownSeconds: number;
+    focusSeconds: number;
+    reportingSeconds: number;
+    integrationSeconds: number;
+    clearingSeconds: number;
+  }>>;
 }
 
 const TargetTimerTab: React.FC<TargetTimerTabProps> = ({ startTargetFocus }) => {

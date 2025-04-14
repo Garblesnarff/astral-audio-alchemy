@@ -26,12 +26,43 @@ const RemoteViewingControls: React.FC<RemoteViewingControlsProps> = ({
   });
   const [selectedTab, setSelectedTab] = useState('controls');
   const [selectedProtocol, setSelectedProtocol] = useState('crv');
+  const [baseFrequency, setBaseFrequency] = useState(200);
+  const [beatFrequency, setBeatFrequency] = useState(4); // 4Hz is specific for remote viewing
   
   const isRemoteViewingPreset = Boolean(selectedPreset?.startsWith('remote-'));
+
+  const handleBaseFrequencyChange = (value: number) => {
+    setBaseFrequency(value);
+  };
+
+  const handleBeatFrequencyChange = (value: number) => {
+    setBeatFrequency(value);
+  };
+
+  const setProtocol = (protocol: 'crv' | 'erv' | 'arv') => {
+    setSelectedProtocol(protocol);
+  };
+
+  const startTargetFocus = (config: {
+    countdownSeconds: number;
+    focusSeconds: number;
+    reportingSeconds: number;
+    integrationSeconds: number;
+    clearingSeconds: number;
+  }) => {
+    // Implementation would go here
+    console.log("Starting target focus with config:", config);
+  };
   
   return (
     <RemoteViewingControlCard selectedTab={selectedTab} onTabChange={setSelectedTab}>
       <BaseControlsTab 
+        currentProtocol={selectedProtocol}
+        setProtocol={setProtocol}
+        baseFrequency={baseFrequency}
+        beatFrequency={beatFrequency}
+        handleBaseFrequencyChange={handleBaseFrequencyChange}
+        handleBeatFrequencyChange={handleBeatFrequencyChange}
         isRecording={isRecording}
         setIsRecording={setIsRecording}
         isPlaybackActive={isPlaying}
@@ -39,6 +70,7 @@ const RemoteViewingControls: React.FC<RemoteViewingControlsProps> = ({
       />
       
       <TargetTimerTab
+        startTargetFocus={startTargetFocus}
         isPlaybackActive={isPlaying}
         isRemoteViewingPreset={isRemoteViewingPreset}
         targetFocusConfig={targetFocusConfig}

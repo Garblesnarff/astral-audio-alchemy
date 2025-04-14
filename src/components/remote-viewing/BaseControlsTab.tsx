@@ -13,6 +13,10 @@ interface BaseControlsTabProps {
   beatFrequency: number;
   handleBaseFrequencyChange: (value: number) => void;
   handleBeatFrequencyChange: (value: number) => void;
+  isRecording?: boolean;
+  setIsRecording?: (isRecording: boolean) => void;
+  isPlaybackActive?: boolean;
+  isRemoteViewingPreset?: boolean;
 }
 
 const BaseControlsTab: React.FC<BaseControlsTabProps> = ({
