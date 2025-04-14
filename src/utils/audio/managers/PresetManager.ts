@@ -4,6 +4,7 @@ import { AlienPreset } from '../AlienPreset';
 import { LucidDreamingPreset } from '../LucidDreamingPreset';
 import { AstralProjectionPreset } from '../astral/AstralProjectionPreset';
 import { RemoteViewingPreset } from '../remote/RemoteViewingPreset';
+import { GatewayProcessPreset } from '../gateway/GatewayProcessPreset';
 import { AudioEngineBase } from '../AudioEngineBase';
 
 export class PresetManager {
@@ -12,6 +13,7 @@ export class PresetManager {
   private lucidDreamingPreset: LucidDreamingPreset;
   private astralProjectionPreset: AstralProjectionPreset;
   private remoteViewingPreset: RemoteViewingPreset;
+  private gatewayProcessPreset: GatewayProcessPreset;
   private activeEngine: AudioEngineBase;
 
   constructor() {
@@ -20,6 +22,7 @@ export class PresetManager {
     this.lucidDreamingPreset = new LucidDreamingPreset();
     this.astralProjectionPreset = new AstralProjectionPreset();
     this.remoteViewingPreset = new RemoteViewingPreset();
+    this.gatewayProcessPreset = new GatewayProcessPreset();
     this.activeEngine = this.standardPreset; // Default
   }
 
@@ -28,7 +31,8 @@ export class PresetManager {
            this.alienPreset.initialize() && 
            this.lucidDreamingPreset.initialize() &&
            this.astralProjectionPreset.initialize() &&
-           this.remoteViewingPreset.initialize();
+           this.remoteViewingPreset.initialize() &&
+           this.gatewayProcessPreset.initialize();
   }
 
   getActiveEngine(): AudioEngineBase {
@@ -49,6 +53,9 @@ export class PresetManager {
     } else if (preset.startsWith('remote-')) {
       this.activeEngine = this.remoteViewingPreset;
       this.remoteViewingPreset.start(baseFreq, beatFreq, volume, preset);
+    } else if (preset.startsWith('gateway-')) {
+      this.activeEngine = this.gatewayProcessPreset;
+      this.gatewayProcessPreset.start(baseFreq, beatFreq, volume, preset);
     } else {
       this.activeEngine = this.standardPreset;
       this.standardPreset.start(baseFreq, beatFreq, volume);
@@ -66,6 +73,10 @@ export class PresetManager {
   getRemoteViewingPreset(): RemoteViewingPreset {
     return this.remoteViewingPreset;
   }
+  
+  getGatewayProcessPreset(): GatewayProcessPreset {
+    return this.gatewayProcessPreset;
+  }
 
   stopAllPresets(): void {
     this.standardPreset.stop();
@@ -73,6 +84,7 @@ export class PresetManager {
     this.lucidDreamingPreset.stop();
     this.astralProjectionPreset.stop();
     this.remoteViewingPreset.stop();
+    this.gatewayProcessPreset.stop();
   }
 
   cleanupAllPresets(): void {
@@ -81,5 +93,6 @@ export class PresetManager {
     this.lucidDreamingPreset.cleanup();
     this.astralProjectionPreset.cleanup();
     this.remoteViewingPreset.cleanup();
+    this.gatewayProcessPreset.cleanup();
   }
 }

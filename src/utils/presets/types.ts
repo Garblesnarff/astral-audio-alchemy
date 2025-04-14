@@ -6,7 +6,7 @@ export interface Preset {
   description: string;
   baseFrequency: number;
   beatFrequency: number;
-  category: 'relaxation' | 'sleep' | 'concentration' | 'meditation' | 'special' | 'lucid' | 'astral' | 'remote';
+  category: 'relaxation' | 'sleep' | 'concentration' | 'meditation' | 'special' | 'lucid' | 'astral' | 'remote' | 'gateway';
   benefits: string[];
   recommendedDuration: number; // in minutes
 }

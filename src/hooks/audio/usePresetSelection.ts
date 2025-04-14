@@ -47,6 +47,14 @@ export function usePresetSelection(
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
           
           handleRemoteViewingPresetToast(presetId);
+        } else if (presetId.startsWith('gateway-')) {
+          audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume, presetId);
+          
+          toast({
+            title: 'Gateway Process Activated',
+            description: `${preset.name} frequencies are now active. Recommended duration: ${preset.recommendedDuration} minutes.`,
+            duration: 5000,
+          });
         } else {
           audioEngine.start(preset.baseFrequency, preset.beatFrequency, volume);
         }

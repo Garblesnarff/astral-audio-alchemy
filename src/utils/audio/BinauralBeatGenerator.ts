@@ -4,6 +4,7 @@ import { PresetManager } from './managers/PresetManager';
 import { LucidDreamingPreset } from './LucidDreamingPreset';
 import { AstralProjectionPreset } from './astral/AstralProjectionPreset';
 import { RemoteViewingPreset } from './remote/RemoteViewingPreset';
+import { GatewayProcessPreset } from './gateway/GatewayProcessPreset';
 
 // Class to handle the Web Audio API logic
 export class BinauralBeatGenerator {
@@ -139,6 +140,30 @@ export class BinauralBeatGenerator {
     if (this.presetManager.getActiveEngine() === remotePreset) {
       remotePreset.setProtocol(protocol);
     }
+  }
+  
+  // Gateway Process specific methods
+  setFocusLevel(level: 'focus10' | 'focus12' | 'focus15' | 'focus21') {
+    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
+    if (this.presetManager.getActiveEngine() === gatewayPreset) {
+      gatewayPreset.setFocusLevel(level);
+    }
+  }
+  
+  getCurrentFocusLevel(): string {
+    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
+    if (this.presetManager.getActiveEngine() === gatewayPreset) {
+      return gatewayPreset.getCurrentFocusLevel();
+    }
+    return '';
+  }
+  
+  getGatewaySessionProgress(): number {
+    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
+    if (this.presetManager.getActiveEngine() === gatewayPreset) {
+      return gatewayPreset.getSessionProgress();
+    }
+    return 0;
   }
   
   stop() {

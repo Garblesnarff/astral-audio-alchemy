@@ -1,4 +1,3 @@
-
 export const getRandomAlienColor = (): string => {
   const colors = [
     'rgba(168, 85, 247, 0.8)',  // purple
@@ -55,3 +54,38 @@ export const initializeAstralParticles = (): Array<{ x: number; y: number; size:
 export const initializeRemoteViewingParticles = (): Array<{ x: number; y: number; size: number; speed: number; color: string }> => {
   return initializeParticles(35, getRandomRemoteViewingColor);
 };
+
+export function initializeGatewayParticles() {
+  const particles = [];
+  const numParticles = 20;
+  
+  // Create particles for Gateway Process visualization
+  for (let i = 0; i < numParticles; i++) {
+    // Generate random position, size, and speed
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    const size = Math.random() * 4 + 1;
+    const speed = Math.random() * 0.5 + 0.1;
+    
+    // Use a color scheme for Gateway Process
+    const colors = [
+      'rgba(6, 182, 212, 0.6)',   // cyan
+      'rgba(59, 130, 246, 0.6)',  // blue
+      'rgba(99, 102, 241, 0.6)',  // indigo
+      'rgba(139, 92, 246, 0.6)',  // violet
+      'rgba(255, 255, 255, 0.4)'  // white (subtle)
+    ];
+    
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    particles.push({
+      x,
+      y,
+      size,
+      speed,
+      color
+    });
+  }
+  
+  return particles;
+}

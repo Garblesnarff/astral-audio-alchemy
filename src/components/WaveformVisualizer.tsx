@@ -5,18 +5,21 @@ import AlienVisualizer from './visualizers/AlienVisualizer';
 import AstralVisualizer from './visualizers/AstralVisualizer';
 import RemoteVisualizer from './visualizers/RemoteVisualizer';
 import LucidVisualizer from './visualizers/LucidVisualizer';
+import GatewayVisualizer from './visualizers/GatewayVisualizer';
 import { 
   generateDefaultBars, 
   generateAlienBars, 
   generateAstralBars, 
   generateRemoteViewingBars,
   generateLucidDreamingBars,
+  generateGatewayProcessBars,
   type BarType
 } from './visualizers/BarGenerator';
 import {
   initializeAlienParticles,
   initializeAstralParticles,
-  initializeRemoteViewingParticles
+  initializeRemoteViewingParticles,
+  initializeGatewayParticles
 } from './visualizers/ParticleGenerator';
 
 interface WaveformVisualizerProps {
@@ -56,6 +59,13 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
     } else if (preset.startsWith('lucid-')) {
       setBars(generateLucidDreamingBars(preset));
       setParticles([]);
+    } else if (preset.startsWith('gateway-')) {
+      setBars(generateGatewayProcessBars(preset));
+      
+      // Initialize particles for gateway preset
+      if (isPlaying) {
+        setParticles(initializeGatewayParticles());
+      }
     } else {
       // Default visualization for other presets
       setBars(generateDefaultBars());
@@ -97,6 +107,7 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
   const isLucidDreaming = preset.startsWith('lucid-');
   const isAstralProjection = preset.startsWith('astral-');
   const isRemoteViewing = preset.startsWith('remote-');
+  const isGatewayProcess = preset.startsWith('gateway-');
   
   return (
     <div className={`transition-all duration-500 ${
@@ -108,7 +119,9 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
             ? 'border border-fuchsia-500/30 rounded-lg p-2 bg-gradient-to-r from-indigo-950/20 to-fuchsia-950/20 astral-pulse backdrop-blur-sm'
             : isRemoteViewing
               ? 'border border-indigo-400/30 rounded-lg p-2 bg-gradient-to-r from-indigo-950/20 to-purple-950/20 remote-pulse backdrop-blur-sm'
-              : ''
+              : isGatewayProcess
+                ? 'border border-cyan-500/30 rounded-lg p-2 bg-gradient-to-r from-blue-950/20 to-cyan-950/20 gateway-pulse backdrop-blur-sm'
+                : ''
     }`}>
       {/* Status indicators */}
       {isAlien && isPlaying && (
@@ -135,12 +148,19 @@ const WaveformVisualizer: React.FC<WaveformVisualizerProps> = ({ isPlaying, pres
         </div>
       )}
       
+      {isGatewayProcess && isPlaying && (
+        <div className="absolute -top-2 -right-2 px-2 py-1 bg-cyan-600 text-white text-xs rounded-full animate-pulse z-10">
+          Gateway Process Active
+        </div>
+      )}
+      
       {/* Specialized visualization components based on preset */}
       <div className="relative">
         {isAlien && <AlienVisualizer isPlaying={isPlaying} bars={bars} particles={particles} />}
         {isAstralProjection && <AstralVisualizer isPlaying={isPlaying} bars={bars} particles={particles} />}
         {isRemoteViewing && <RemoteVisualizer isPlaying={isPlaying} bars={bars} particles={particles} preset={preset} />}
         {isLucidDreaming && <LucidVisualizer isPlaying={isPlaying} bars={bars} />}
+        {isGatewayProcess && <GatewayVisualizer isPlaying={isPlaying} bars={bars} particles={particles} preset={preset} />}
         
         {/* Common waveform bars for all visualization types */}
         <WaveformBars bars={bars} isPlaying={isPlaying} preset={preset} />

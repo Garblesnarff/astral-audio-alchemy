@@ -1,10 +1,10 @@
-
+import { useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 export function usePresetToasts() {
   const { toast } = useToast();
-
-  const handleLucidPresetToast = (presetId: string) => {
+  
+  const handleLucidPresetToast = useCallback((presetId: string) => {
     if (presetId === 'lucid-basic') {
       toast({
         title: "Lucid Dreaming Mode",
@@ -30,9 +30,9 @@ export function usePresetToasts() {
         duration: 5000,
       });
     }
-  };
+  }, [toast]);
   
-  const handleAstralPresetToast = (presetId: string) => {
+  const handleAstralPresetToast = useCallback((presetId: string) => {
     if (presetId === 'astral-deep-theta') {
       toast({
         title: "Deep Theta Astral Mode",
@@ -64,9 +64,9 @@ export function usePresetToasts() {
         duration: 5000,
       });
     }
-  };
+  }, [toast]);
   
-  const handleRemoteViewingPresetToast = (presetId: string) => {
+  const handleRemoteViewingPresetToast = useCallback((presetId: string) => {
     if (presetId === 'remote-theta-delta') {
       toast({
         title: "Theta-Delta Mix Mode",
@@ -110,11 +110,40 @@ export function usePresetToasts() {
         duration: 5000,
       });
     }
-  };
-
+  }, [toast]);
+  
+  const handleGatewayPresetToast = useCallback((presetId: string) => {
+    if (presetId.startsWith('gateway-focus10')) {
+      toast({
+        title: 'Focus 10: Mind Awake, Body Asleep',
+        description: 'This state allows your body to enter deep relaxation while maintaining mental alertness.',
+        duration: 5000,
+      });
+    } else if (presetId.startsWith('gateway-focus12')) {
+      toast({
+        title: 'Focus 12: Expanded Awareness',
+        description: 'Your consciousness expands beyond physical sensory input in this state.',
+        duration: 5000,
+      });
+    } else if (presetId.startsWith('gateway-focus15')) {
+      toast({
+        title: 'Focus 15: No Time',
+        description: 'A state beyond time where you can access past, present, and future potentials.',
+        duration: 5000,
+      });
+    } else if (presetId.startsWith('gateway-focus21')) {
+      toast({
+        title: 'Focus 21: Other Energy Systems',
+        description: 'This advanced state bridges to other dimensions and energy systems.',
+        duration: 5000,
+      });
+    }
+  }, [toast]);
+  
   return {
     handleLucidPresetToast,
     handleAstralPresetToast,
-    handleRemoteViewingPresetToast
+    handleRemoteViewingPresetToast,
+    handleGatewayPresetToast
   };
 }
