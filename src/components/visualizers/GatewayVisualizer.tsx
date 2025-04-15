@@ -13,19 +13,22 @@ interface GatewayVisualizerProps {
   preset: string;
 }
 
+// Define the valid focus level types to match what FocusLevelIndicator expects
+type FocusLevel = 'focus10' | 'focus12' | 'focus15' | 'focus21';
+
 const GatewayVisualizer: React.FC<GatewayVisualizerProps> = ({ 
   isPlaying, 
   bars, 
   particles,
   preset
 }) => {
-  const [focusLevel, setFocusLevel] = useState<string>('focus10');
+  const [focusLevel, setFocusLevel] = useState<FocusLevel>('focus10');
   const [pulsateSpeed, setPulsateSpeed] = useState<number>(1.5);
   
   useEffect(() => {
     // Extract focus level directly from the preset ID
     if (preset) {
-      let extractedLevel = 'focus10'; // Default
+      let extractedLevel: FocusLevel = 'focus10'; // Default
       
       if (preset.includes('focus10')) {
         extractedLevel = 'focus10';
@@ -53,15 +56,25 @@ const GatewayVisualizer: React.FC<GatewayVisualizerProps> = ({
     if (isPlaying) {
       const interval = setInterval(() => {
         const currentLevel = audioEngine.getCurrentFocusLevel();
-        if (currentLevel && currentLevel !== focusLevel) {
-          setFocusLevel(currentLevel);
+        if (currentLevel) {
+          // Ensure we're using a valid focus level type
+          const validLevel: FocusLevel = (
+            currentLevel === 'focus10' || 
+            currentLevel === 'focus12' || 
+            currentLevel === 'focus15' || 
+            currentLevel === 'focus21'
+          ) ? currentLevel as FocusLevel : 'focus10';
           
-          // Adjust pulsation based on focus level
-          switch (currentLevel) {
-            case 'focus10': setPulsateSpeed(1.5); break;
-            case 'focus12': setPulsateSpeed(1.2); break;
-            case 'focus15': setPulsateSpeed(1.0); break;
-            case 'focus21': setPulsateSpeed(0.7); break;
+          if (validLevel !== focusLevel) {
+            setFocusLevel(validLevel);
+            
+            // Adjust pulsation based on focus level
+            switch (validLevel) {
+              case 'focus10': setPulsateSpeed(1.5); break;
+              case 'focus12': setPulsateSpeed(1.2); break;
+              case 'focus15': setPulsateSpeed(1.0); break;
+              case 'focus21': setPulsateSpeed(0.7); break;
+            }
           }
         }
       }, 2000);
