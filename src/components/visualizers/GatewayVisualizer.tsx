@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Brain } from 'lucide-react';
+import { motion } from 'framer-motion';
 import audioEngine from '@/utils/audioEngine';
 import HemisphereVisualization from './gateway/HemisphereVisualization';
 import FocusLevelIndicator from './gateway/FocusLevelIndicator';
