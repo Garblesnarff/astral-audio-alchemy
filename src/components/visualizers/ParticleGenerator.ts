@@ -57,33 +57,30 @@ export const initializeRemoteViewingParticles = (): Array<{ x: number; y: number
 
 export function initializeGatewayParticles() {
   const particles = [];
-  const numParticles = 20;
   
-  // Create particles for Gateway Process visualization
-  for (let i = 0; i < numParticles; i++) {
-    // Generate random position, size, and speed
+  // Create particles based on the focus level
+  for (let i = 0; i < 30; i++) {
     const x = Math.random() * 100;
     const y = Math.random() * 100;
     const size = Math.random() * 4 + 1;
-    const speed = Math.random() * 0.5 + 0.1;
+    const speed = Math.random() * 0.3 + 0.1;
     
-    // Use a color scheme for Gateway Process
+    // Color gradient based on different levels
     const colors = [
-      'rgba(6, 182, 212, 0.6)',   // cyan
-      'rgba(59, 130, 246, 0.6)',  // blue
-      'rgba(99, 102, 241, 0.6)',  // indigo
-      'rgba(139, 92, 246, 0.6)',  // violet
-      'rgba(255, 255, 255, 0.4)'  // white (subtle)
+      'rgba(6, 182, 212, 0.7)',   // cyan for focus10
+      'rgba(59, 130, 246, 0.7)',  // blue for focus12
+      'rgba(99, 102, 241, 0.7)',  // indigo for focus15
+      'rgba(139, 92, 246, 0.7)'   // purple for focus21
     ];
     
-    const color = colors[Math.floor(Math.random() * colors.length)];
+    const colorIndex = Math.floor(Math.random() * colors.length);
     
     particles.push({
       x,
       y,
       size,
       speed,
-      color
+      color: colors[colorIndex]
     });
   }
   

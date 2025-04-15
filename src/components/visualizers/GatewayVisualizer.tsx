@@ -23,23 +23,34 @@ const GatewayVisualizer: React.FC<GatewayVisualizerProps> = ({
   const [pulsateSpeed, setPulsateSpeed] = useState<number>(1.5);
   
   useEffect(() => {
-    if (isPlaying) {
-      // Determine focus level from preset ID
+    // Extract focus level directly from the preset ID
+    if (preset) {
+      let extractedLevel = 'focus10'; // Default
+      
       if (preset.includes('focus10')) {
-        setFocusLevel('focus10');
+        extractedLevel = 'focus10';
         setPulsateSpeed(1.5);
       } else if (preset.includes('focus12')) {
-        setFocusLevel('focus12');
+        extractedLevel = 'focus12';
         setPulsateSpeed(1.2);
       } else if (preset.includes('focus15')) {
-        setFocusLevel('focus15');
+        extractedLevel = 'focus15';
         setPulsateSpeed(1.0);
       } else if (preset.includes('focus21')) {
-        setFocusLevel('focus21');
+        extractedLevel = 'focus21';
         setPulsateSpeed(0.7);
       }
       
-      // Poll for focus level changes
+      setFocusLevel(extractedLevel);
+      
+      // Also update the focus level in the audio engine if playing
+      if (isPlaying) {
+        audioEngine.setFocusLevel(extractedLevel);
+      }
+    }
+    
+    // Only set up polling if actually playing
+    if (isPlaying) {
       const interval = setInterval(() => {
         const currentLevel = audioEngine.getCurrentFocusLevel();
         if (currentLevel && currentLevel !== focusLevel) {
