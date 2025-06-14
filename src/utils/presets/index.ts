@@ -9,6 +9,7 @@ import { lucidDreamingPresets } from './lucidDreamingPresets';
 import { astralProjectionPresets } from './astralProjectionPresets';
 import { remoteViewingPresets } from './remoteViewingPresets';
 import { gatewayProcessPresets } from './gatewayProcessPresets';
+import { guidedMeditationPresets } from './guidedMeditationPresets';
 
 // Combine all presets
 export const presets: Preset[] = [
@@ -20,7 +21,8 @@ export const presets: Preset[] = [
   ...lucidDreamingPresets,
   ...astralProjectionPresets,
   ...remoteViewingPresets,
-  ...gatewayProcessPresets
+  ...gatewayProcessPresets,
+  ...guidedMeditationPresets
 ];
 
 // Re-export the Preset type

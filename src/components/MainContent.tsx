@@ -10,6 +10,8 @@ import AstralProjectionGuide from '@/components/AstralProjectionGuide';
 import RemoteViewingControls from '@/components/remote-viewing/RemoteViewingControls';
 import RemoteViewingGuide from '@/components/RemoteViewingGuide';
 import LucidDreamingGuide from '@/components/LucidDreamingGuide';
+import GuidedModeControls from '@/components/guided/GuidedModeControls';
+import { useGuidedMeditation } from '@/hooks/useGuidedMeditation';
 
 interface MainContentProps {
   isPlaying: boolean;
@@ -45,6 +47,29 @@ const MainContent: React.FC<MainContentProps> = ({
   const isLucidDreamingPreset = selectedPreset && selectedPreset.startsWith('lucid-');
   const isAstralProjectionPreset = selectedPreset && selectedPreset.startsWith('astral-');
   const isRemoteViewingPreset = selectedPreset && selectedPreset.startsWith('remote-');
+  const isGuidedPreset = selectedPreset && selectedPreset.startsWith('guided-');
+  
+  const {
+    guidedState,
+    sessionProgress,
+    currentSegmentText,
+    startGuidedMeditation,
+    stopGuidedMeditation,
+    handleVoiceVolumeChange,
+    handleVoiceSpeedChange,
+    handleTextOverlayToggle,
+    handleSkipSegment,
+    handleReplaySegment
+  } = useGuidedMeditation();
+
+  // Start guided meditation when a guided preset is selected and playing
+  React.useEffect(() => {
+    if (isGuidedPreset && isPlaying && !guidedState.isGuidedMode) {
+      startGuidedMeditation(selectedPreset);
+    } else if (!isPlaying && guidedState.isGuidedMode) {
+      stopGuidedMeditation();
+    }
+  }, [isGuidedPreset, isPlaying, selectedPreset, guidedState.isGuidedMode, startGuidedMeditation, stopGuidedMeditation]);
   
   return (
     <div className="space-y-8">
@@ -87,6 +112,19 @@ const MainContent: React.FC<MainContentProps> = ({
             <RemoteViewingControls 
               isPlaying={isPlaying}
               selectedPreset={selectedPreset}
+            />
+          )}
+
+          {isGuidedPreset && (
+            <GuidedModeControls
+              guidedState={guidedState}
+              onVoiceVolumeChange={handleVoiceVolumeChange}
+              onVoiceSpeedChange={handleVoiceSpeedChange}
+              onTextOverlayToggle={handleTextOverlayToggle}
+              onSkipSegment={handleSkipSegment}
+              onReplaySegment={handleReplaySegment}
+              sessionProgress={sessionProgress}
+              currentSegmentText={currentSegmentText}
             />
           )}
         </div>
