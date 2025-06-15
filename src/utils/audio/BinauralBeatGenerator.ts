@@ -1,91 +1,52 @@
 
-import { AudioInterfaceManager } from './managers/AudioInterfaceManager';
-import { PresetManager } from './managers/PresetManager';
-import { LucidDreamingPreset } from './LucidDreamingPreset';
-import { AstralProjectionPreset } from './astral/AstralProjectionPreset';
-import { RemoteViewingPreset } from './remote/RemoteViewingPreset';
-import { GatewayProcessPreset } from './gateway/GatewayProcessPreset';
+import { BinauralBeatCore } from './core/BinauralBeatCore';
+import { LucidDreamingInterface } from './interfaces/LucidDreamingInterface';
+import { AstralProjectionInterface } from './interfaces/AstralProjectionInterface';
+import { RemoteViewingInterface } from './interfaces/RemoteViewingInterface';
+import { GatewayProcessInterface } from './interfaces/GatewayProcessInterface';
 
-// Class to handle the Web Audio API logic
-export class BinauralBeatGenerator {
-  private presetManager: PresetManager;
-  private audioInterface: AudioInterfaceManager;
+// Main class that combines all functionality through composition
+export class BinauralBeatGenerator extends BinauralBeatCore {
+  private lucidInterface: LucidDreamingInterface;
+  private astralInterface: AstralProjectionInterface;
+  private remoteInterface: RemoteViewingInterface;
+  private gatewayInterface: GatewayProcessInterface;
 
   constructor() {
-    this.presetManager = new PresetManager();
-    this.audioInterface = new AudioInterfaceManager(this.presetManager);
+    super();
+    this.lucidInterface = new LucidDreamingInterface(this.presetManager);
+    this.astralInterface = new AstralProjectionInterface(this.presetManager);
+    this.remoteInterface = new RemoteViewingInterface(this.presetManager);
+    this.gatewayInterface = new GatewayProcessInterface(this.presetManager);
   }
 
-  // Initialize the audio context
-  initialize() {
-    return this.presetManager.initialize();
-  }
-
-  // Get the audio context
-  getAudioContext() {
-    return this.audioInterface.getAudioContext();
-  }
-
-  // Get the analyser node
-  getAnalyser() {
-    return this.audioInterface.getAnalyser();
-  }
-
-  // Start the binaural beat
-  start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'custom') {
-    this.stop();
-    this.presetManager.setActivePreset(preset, baseFreq, beatFreq, volume);
-  }
-  
-  // Enable reality check sounds for lucid dreaming
+  // Lucid dreaming methods
   enableRealityCheck(intervalMinutes: number = 15) {
-    const lucidPreset = this.presetManager.getLucidDreamingPreset();
-    if (this.presetManager.getActiveEngine() === lucidPreset) {
-      lucidPreset.enableRealityCheck(intervalMinutes);
-    }
+    this.lucidInterface.enableRealityCheck(intervalMinutes);
   }
   
-  // Disable reality check sounds
   disableRealityCheck() {
-    const lucidPreset = this.presetManager.getLucidDreamingPreset();
-    if (this.presetManager.getActiveEngine() === lucidPreset) {
-      lucidPreset.disableRealityCheck();
-    }
+    this.lucidInterface.disableRealityCheck();
   }
   
-  // Start WBTB timer for lucid dreaming
   startWBTBTimer(wakeUpAfterMinutes: number) {
-    const lucidPreset = this.presetManager.getLucidDreamingPreset();
-    if (this.presetManager.getActiveEngine() === lucidPreset) {
-      lucidPreset.startWBTBTimer(wakeUpAfterMinutes);
-    }
+    this.lucidInterface.startWBTBTimer(wakeUpAfterMinutes);
   }
   
-  // Cancel WBTB timer
   cancelWBTB() {
-    const lucidPreset = this.presetManager.getLucidDreamingPreset();
-    if (this.presetManager.getActiveEngine() === lucidPreset) {
-      lucidPreset.cancelWBTB();
-    }
+    this.lucidInterface.cancelWBTB();
   }
-  
-  // Enable return signal for astral projection
+
+  // Astral projection methods
   enableReturnSignal() {
-    const astralPreset = this.presetManager.getAstralProjectionPreset();
-    if (this.presetManager.getActiveEngine() === astralPreset) {
-      astralPreset.enableReturnSignal();
-    }
+    this.astralInterface.enableReturnSignal();
   }
   
-  // Disable return signal for astral projection
   disableReturnSignal() {
-    const astralPreset = this.presetManager.getAstralProjectionPreset();
-    if (this.presetManager.getActiveEngine() === astralPreset) {
-      astralPreset.disableReturnSignal();
-    }
+    this.astralInterface.disableReturnSignal();
   }
-  
-  // Start target focus timer for remote viewing
+
+  // Remote viewing methods
   startTargetFocus(config: {
     countdownSeconds: number;
     focusSeconds: number;
@@ -93,120 +54,39 @@ export class BinauralBeatGenerator {
     integrationSeconds: number;
     clearingSeconds: number;
   }) {
-    const remotePreset = this.presetManager.getRemoteViewingPreset();
-    if (this.presetManager.getActiveEngine() === remotePreset) {
-      remotePreset.startTargetFocus(config);
-    }
+    this.remoteInterface.startTargetFocus(config);
   }
   
-  // Clear energy for remote viewing
   clearEnergy(durationMs: number = 5000) {
-    const remotePreset = this.presetManager.getRemoteViewingPreset();
-    if (this.presetManager.getActiveEngine() === remotePreset) {
-      remotePreset.clearEnergy(durationMs);
-    }
+    this.remoteInterface.clearEnergy(durationMs);
   }
   
-  // Start audio recording for remote viewing
   startRecording(): Promise<void> {
-    const remotePreset = this.presetManager.getRemoteViewingPreset();
-    if (this.presetManager.getActiveEngine() === remotePreset) {
-      return remotePreset.startRecording();
-    }
-    return Promise.reject(new Error('Recording only available in Remote Viewing mode'));
+    return this.remoteInterface.startRecording();
   }
   
-  // Stop audio recording for remote viewing
   stopRecording(): Promise<Blob | null> {
-    const remotePreset = this.presetManager.getRemoteViewingPreset();
-    if (this.presetManager.getActiveEngine() === remotePreset) {
-      return remotePreset.stopRecording();
-    }
-    return Promise.resolve(null);
+    return this.remoteInterface.stopRecording();
   }
   
-  // Get current remote viewing protocol
   getCurrentRemoteViewingProtocol(): string {
-    const remotePreset = this.presetManager.getRemoteViewingPreset();
-    if (this.presetManager.getActiveEngine() === remotePreset) {
-      return remotePreset.getCurrentProtocol();
-    }
-    return '';
+    return this.remoteInterface.getCurrentRemoteViewingProtocol();
   }
   
-  // Set remote viewing protocol
   setRemoteViewingProtocol(protocol: 'crv' | 'erv' | 'arv') {
-    const remotePreset = this.presetManager.getRemoteViewingPreset();
-    if (this.presetManager.getActiveEngine() === remotePreset) {
-      remotePreset.setProtocol(protocol);
-    }
+    this.remoteInterface.setRemoteViewingProtocol(protocol);
   }
-  
-  // Gateway Process specific methods
+
+  // Gateway Process methods
   setFocusLevel(level: 'focus10' | 'focus12' | 'focus15' | 'focus21') {
-    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
-    if (this.presetManager.getActiveEngine() === gatewayPreset) {
-      gatewayPreset.setFocusLevel(level);
-    }
+    this.gatewayInterface.setFocusLevel(level);
   }
   
   getCurrentFocusLevel(): string {
-    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
-    if (this.presetManager.getActiveEngine() === gatewayPreset) {
-      return gatewayPreset.getCurrentFocusLevel();
-    }
-    return '';
+    return this.gatewayInterface.getCurrentFocusLevel();
   }
   
   getGatewaySessionProgress(): number {
-    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
-    if (this.presetManager.getActiveEngine() === gatewayPreset) {
-      return gatewayPreset.getSessionProgress();
-    }
-    return 0;
-  }
-  
-  stop() {
-    this.presetManager.stopAllPresets();
-  }
-  
-  setVolume(volume: number) {
-    this.audioInterface.setVolume(volume);
-  }
-  
-  getIsPlaying() {
-    return this.audioInterface.getIsPlaying();
-  }
-  
-  getCurrentPreset() {
-    return this.audioInterface.getCurrentPreset();
-  }
-  
-  setBaseFrequency(frequency: number) {
-    this.audioInterface.setBaseFrequency(frequency);
-  }
-  
-  setBeatFrequency(frequency: number) {
-    this.audioInterface.setBeatFrequency(frequency);
-  }
-  
-  getBaseFrequency() {
-    return this.audioInterface.getBaseFrequency();
-  }
-  
-  getBeatFrequency() {
-    return this.audioInterface.getBeatFrequency();
-  }
-  
-  suspend() {
-    this.audioInterface.suspend();
-  }
-  
-  resume() {
-    this.audioInterface.resume();
-  }
-  
-  cleanup() {
-    this.presetManager.cleanupAllPresets();
+    return this.gatewayInterface.getGatewaySessionProgress();
   }
 }
