@@ -1,7 +1,7 @@
 
 import { StandardBinauralPreset } from '../StandardBinauralPreset';
 import { AlienPreset } from '../AlienPreset';
-import { LucidDreamingPreset } from '../LucidDreamingPreset';
+import { LucidDreamingPreset } from '../lucid/LucidDreamingPreset';
 import { AstralProjectionPreset } from '../astral/AstralProjectionPreset';
 import { RemoteViewingPreset } from '../remote/RemoteViewingPreset';
 import { GatewayProcessPreset } from '../gateway/GatewayProcessPreset';
