@@ -15,17 +15,7 @@ const Index = () => {
         <InfoBanners />
         
         <MainContent 
-          isPlaying={audioState.isPlaying}
-          volume={audioState.volume}
-          baseFrequency={audioState.baseFrequency}
-          beatFrequency={audioState.beatFrequency}
-          selectedPreset={audioState.selectedPreset}
-          togglePlay={audioState.togglePlay}
-          handleVolumeChange={audioState.handleVolumeChange}
-          handleBaseFrequencyChange={audioState.handleBaseFrequencyChange}
-          handleBeatFrequencyChange={audioState.handleBeatFrequencyChange}
-          handleSelectPreset={audioState.handleSelectPreset}
-          handleTimerEnd={audioState.handleTimerEnd}
+          {...audioState}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
         />

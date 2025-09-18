@@ -52,4 +52,26 @@ export class AudioInterfaceManager {
   resume(): void {
     this.presetManager.getActiveEngine().resume();
   }
+
+  // Ambient sound methods
+  playAmbientSound(soundId: string, url: string, volume: number): void {
+    const engine = this.presetManager.getActiveEngine();
+    if (engine) {
+      engine.playAmbientSound(soundId, url, volume);
+    }
+  }
+
+  stopAmbientSound(soundId: string): void {
+    const engine = this.presetManager.getActiveEngine();
+    if (engine) {
+      engine.stopAmbientSound(soundId);
+    }
+  }
+
+  setAmbientVolume(soundId: string, volume: number): void {
+    const engine = this.presetManager.getActiveEngine();
+    if (engine) {
+      engine.setAmbientVolume(soundId, volume);
+    }
+  }
 }
