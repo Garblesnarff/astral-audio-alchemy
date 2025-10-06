@@ -12,6 +12,7 @@ import RemoteViewingGuide from '@/components/RemoteViewingGuide';
 import LucidDreamingGuide from '@/components/LucidDreamingGuide';
 import GuidedModeControls from '@/components/guided/GuidedModeControls';
 import { useGuidedMeditation } from '@/hooks/useGuidedMeditation';
+import AmbientSoundControls from './AmbientSoundControls';
 
 interface MainContentProps {
   isPlaying: boolean;
@@ -19,12 +20,15 @@ interface MainContentProps {
   baseFrequency: number;
   beatFrequency: number;
   selectedPreset: string | null;
+  ambientSounds: Record<string, { isOn: boolean; volume: number }>;
   togglePlay: () => void;
   handleVolumeChange: (value: number) => void;
   handleBaseFrequencyChange: (value: number) => void;
   handleBeatFrequencyChange: (value: number) => void;
   handleSelectPreset: (presetId: string) => void;
   handleTimerEnd: () => void;
+  handleToggleAmbientSound: (soundId: string, isOn: boolean) => void;
+  handleAmbientVolumeChange: (soundId: string, volume: number) => void;
   currentTab: string;
   setCurrentTab: (value: string) => void;
 }
@@ -35,12 +39,15 @@ const MainContent: React.FC<MainContentProps> = ({
   baseFrequency,
   beatFrequency,
   selectedPreset,
+  ambientSounds,
   togglePlay,
   handleVolumeChange,
   handleBaseFrequencyChange,
   handleBeatFrequencyChange,
   handleSelectPreset,
   handleTimerEnd,
+  handleToggleAmbientSound,
+  handleAmbientVolumeChange,
   currentTab,
   setCurrentTab
 }) => {
@@ -92,6 +99,12 @@ const MainContent: React.FC<MainContentProps> = ({
             onBeatFrequencyChange={handleBeatFrequencyChange}
             onTimerEnd={handleTimerEnd}
             isPlaying={isPlaying}
+          />
+
+          <AmbientSoundControls
+            ambientSounds={ambientSounds}
+            onToggle={handleToggleAmbientSound}
+            onVolumeChange={handleAmbientVolumeChange}
           />
           
           {isLucidDreamingPreset && (

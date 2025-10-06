@@ -76,4 +76,17 @@ export class BinauralBeatCore {
   cleanup() {
     this.presetManager.cleanupAllPresets();
   }
+
+  // Ambient sound methods
+  playAmbientSound(soundId: string, url:string, volume: number) {
+    this.audioInterface.playAmbientSound(soundId, url, volume);
+  }
+
+  stopAmbientSound(soundId: string) {
+    this.audioInterface.stopAmbientSound(soundId);
+  }
+
+  setAmbientVolume(soundId: string, volume: number) {
+    this.audioInterface.setAmbientVolume(soundId, volume);
+  }
 }
