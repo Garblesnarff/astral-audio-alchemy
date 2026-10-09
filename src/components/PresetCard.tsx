@@ -18,7 +18,12 @@ const PresetCard: React.FC<PresetCardProps> = ({ preset, isActive, onSelect }) =
     sleep: '😴',
     concentration: '🧠',
     meditation: '🧘',
-    special: '👽'
+    special: '👽',
+    lucid: '💤',
+    astral: '🚀',
+    remote: '🔭',
+    gateway: '🌌',
+    guided: '🧘'
   };
   
   const icon = categoryIcons[preset.category] || '🔊';

@@ -113,7 +113,7 @@ export function betaThetaCycleGenerator(
   const betaDuration = 20; // seconds in beta state
   const thetaDuration = 40; // seconds in theta state
   
-  let cycleInterval = setInterval(() => {
+  const cycleInterval = setInterval(() => {
     if (!audioContext) {
       clearInterval(cycleInterval);
       return;
@@ -146,8 +146,7 @@ export function betaThetaCycleGenerator(
   }, cycleDuration * 1000);
   
   // Store the interval ID for cleanup
-  // @ts-ignore - Adding a custom property for cleanup
-  leftOsc.cycleInterval = cycleInterval;
+  (leftOsc as OscillatorNode & { cycleInterval?: ReturnType<typeof setInterval> }).cycleInterval = cycleInterval;
   
   return { leftOsc, rightOsc };
 }

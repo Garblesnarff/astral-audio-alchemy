@@ -56,6 +56,13 @@ export class TargetFocusTimer {
   }
   
   /**
+   * Check whether the target focus timer is currently running
+   */
+  isRunning(): boolean {
+    return this.targetTimerInterval !== null;
+  }
+  
+  /**
    * Clean up resources
    */
   cleanup(): void {

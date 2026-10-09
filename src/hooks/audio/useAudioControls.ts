@@ -4,6 +4,12 @@ import audioEngine from '@/utils/audioEngine';
 import { useToast } from '@/components/ui/use-toast';
 import { getPresetById } from '@/utils/presets';
 
+interface AudioStateGlobals {
+  baseFrequency: number;
+  beatFrequency: number;
+  volume: number;
+}
+
 export function useAudioControls(
   isPlaying: boolean, 
   setIsPlaying: (playing: boolean) => void,
@@ -20,7 +26,7 @@ export function useAudioControls(
       audioEngine.resume();
       
       // Access globals set in the parent hook
-      const globals = (window as any).audioStateGlobals || {};
+      const globals: AudioStateGlobals = (window as unknown as { audioStateGlobals?: AudioStateGlobals }).audioStateGlobals || { baseFrequency: 200, beatFrequency: 10, volume: 0.5 };
       const { baseFrequency, beatFrequency, volume } = globals;
       
       if (selectedPreset) {

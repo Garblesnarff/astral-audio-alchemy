@@ -43,6 +43,7 @@ const PresetSelection: React.FC<PresetSelectionProps> = ({
                  category === 'lucid' ? '💤' : 
                  category === 'astral' ? '🚀' : 
                  category === 'remote' ? '🔭' : 
+                 category === 'gateway' ? '🌌' : 
                  category === 'guided' ? '🧘' : 
                  category}
               </TabsTrigger>

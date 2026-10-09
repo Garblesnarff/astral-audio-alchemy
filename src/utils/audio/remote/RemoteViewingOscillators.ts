@@ -16,6 +16,8 @@ export class RemoteViewingOscillators {
   private leftGain: GainNode | null = null;
   private rightGain: GainNode | null = null;
   private masterGain: GainNode | null = null;
+  private currentBaseFrequency: number = 200;
+  private currentBeatFrequency: number = 4;
 
   /**
    * Initialize oscillator manager
@@ -34,6 +36,9 @@ export class RemoteViewingOscillators {
     if (!this.audioContext || !this.leftGain || !this.rightGain || !this.masterGain) {
       return;
     }
+    
+    this.currentBaseFrequency = baseFrequency;
+    this.currentBeatFrequency = beatFrequency;
     
     // Stop any existing oscillators
     this.stopOscillators();
@@ -93,6 +98,44 @@ export class RemoteViewingOscillators {
     }
   }
 
+  /**
+   * Update the base carrier frequency of the currently playing oscillators
+   */
+  setBaseFrequency(baseFrequency: number): void {
+    this.currentBaseFrequency = baseFrequency;
+    this.applyFrequencies();
+  }
+  
+  /**
+   * Update the binaural beat frequency of the currently playing oscillators
+   */
+  setBeatFrequency(beatFrequency: number): void {
+    this.currentBeatFrequency = beatFrequency;
+    this.applyFrequencies();
+  }
+  
+  /**
+   * Get the currently active oscillator pair, if any
+   */
+  private getActiveOscillators(): { leftOsc: OscillatorNode; rightOsc: OscillatorNode } | null {
+    return this.thetaDeltaOscillators || this.enhancedAlphaOscillators || this.betaThetaOscillators;
+  }
+  
+  /**
+   * Apply the current base/beat frequencies to the running oscillators
+   */
+  private applyFrequencies(): void {
+    const oscillators = this.getActiveOscillators();
+    if (!oscillators || !this.audioContext) return;
+    
+    const now = this.audioContext.currentTime;
+    oscillators.leftOsc.frequency.setValueAtTime(this.currentBaseFrequency, now);
+    oscillators.rightOsc.frequency.setValueAtTime(
+      this.currentBaseFrequency + this.currentBeatFrequency,
+      now
+    );
+  }
+  
   /**
    * Stop all oscillators
    */

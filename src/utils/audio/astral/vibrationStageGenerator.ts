@@ -8,7 +8,8 @@ export function vibrationStageGenerator(
   baseFrequency: number,
   beatFrequency: number,
   leftGain: GainNode,
-  rightGain: GainNode
+  rightGain: GainNode,
+  intensity: number = 0.5
 ) {
   // Create oscillators for left and right channels
   const leftOsc = audioContext.createOscillator();
@@ -29,7 +30,8 @@ export function vibrationStageGenerator(
   vibrationLFO.frequency.value = 0.1; // Very slow modulation
   
   const vibrationDepth = audioContext.createGain();
-  vibrationDepth.gain.value = 2; // Moderate depth
+  const clampedIntensity = Math.min(1, Math.max(0, intensity));
+  vibrationDepth.gain.value = 1 + clampedIntensity * 4; // 1 (subtle) to 5 (intense)
   
   vibrationLFO.connect(vibrationDepth);
   
@@ -49,8 +51,8 @@ export function vibrationStageGenerator(
   // Start subtle
   vibrationDepth.gain.setValueAtTime(1, now);
   
-  // Gradually increase to peak at 10 minutes
-  vibrationDepth.gain.linearRampToValueAtTime(5, now + 600);
+  // Gradually increase to the peak requested by the user
+  vibrationDepth.gain.linearRampToValueAtTime(1 + clampedIntensity * 4, now + 600);
   
   // Then slowly decrease
   vibrationDepth.gain.linearRampToValueAtTime(2, now + 1200);

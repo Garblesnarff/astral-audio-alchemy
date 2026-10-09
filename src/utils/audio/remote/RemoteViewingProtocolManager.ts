@@ -64,9 +64,15 @@ export class RemoteViewingProtocolManager {
   
   /**
    * Set current protocol
+   * When the audio context is running, the protocol progression is restarted
+   * so the new protocol is applied without interrupting the carrier frequencies.
    */
   setProtocol(protocol: 'crv' | 'erv' | 'arv'): void {
     this.currentProtocol = protocol;
+    
+    if (this.audioContext && this.masterGain && this.audioContext.state === 'running') {
+      this.startProtocol(protocol);
+    }
   }
 
   /**

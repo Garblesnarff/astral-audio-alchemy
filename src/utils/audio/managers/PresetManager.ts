@@ -60,6 +60,10 @@ export class PresetManager {
       this.activeEngine = this.standardPreset;
       this.standardPreset.start(baseFreq, beatFreq, volume);
     }
+    
+    // Each preset owns its own AudioContext, which starts suspended because it was
+    // created outside of a user gesture. Resume it now that playback was requested.
+    this.activeEngine.resume();
   }
 
   getLucidDreamingPreset(): LucidDreamingPreset {

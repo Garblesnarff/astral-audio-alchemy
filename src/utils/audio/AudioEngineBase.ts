@@ -13,7 +13,7 @@ export class AudioEngineBase {
   // Initialize the audio context
   initialize() {
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 1024;
       this.analyser.connect(this.audioContext.destination);

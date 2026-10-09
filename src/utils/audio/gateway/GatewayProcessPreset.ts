@@ -19,6 +19,7 @@ export class GatewayProcessPreset extends AudioEngineBase {
   private sessionActive: boolean = false;
   private progressIntervalId: number | null = null;
   private currentPresetId: string = '';
+  private resonantTuningFrequency: number = 7.83; // Schumann resonance
 
   constructor() {
     super();
@@ -89,6 +90,7 @@ export class GatewayProcessPreset extends AudioEngineBase {
     this.resonantOscillator = resonantNodes.oscillator;
     this.resonantGain = resonantNodes.gain;
     this.resonantGain.connect(this.masterGain);
+    this.setResonantTuning(this.resonantTuningFrequency);
     
     // Start the session
     this.sessionActive = true;
@@ -167,6 +169,24 @@ export class GatewayProcessPreset extends AudioEngineBase {
       this.beatFrequency = frequency;
       this.rightOscillator.frequency.setValueAtTime(this.baseFrequency + frequency, this.audioContext.currentTime);
     }
+  }
+  
+  /**
+   * Retune the resonant tuning layer (Schumann resonance by default)
+   */
+  setResonantTuning(frequency: number): void {
+    this.resonantTuningFrequency = frequency;
+    
+    if (this.resonantOscillator && this.audioContext) {
+      this.resonantOscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+    }
+  }
+  
+  /**
+   * Get the current resonant tuning frequency
+   */
+  getResonantTuning(): number {
+    return this.resonantTuningFrequency;
   }
 
   getCurrentFocusLevel(): string {

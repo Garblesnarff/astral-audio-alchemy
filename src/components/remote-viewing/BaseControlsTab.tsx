@@ -5,6 +5,9 @@ import { TabsContent } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Separator } from '@/components/ui/separator';
+import VoiceRecordingControl from './VoiceRecordingControl';
+import EnergyClearingControl from './EnergyClearingControl';
 
 interface BaseControlsTabProps {
   currentProtocol: string;
@@ -25,7 +28,11 @@ const BaseControlsTab: React.FC<BaseControlsTabProps> = ({
   baseFrequency,
   beatFrequency,
   handleBaseFrequencyChange,
-  handleBeatFrequencyChange
+  handleBeatFrequencyChange,
+  isRecording = false,
+  setIsRecording,
+  isPlaybackActive = false,
+  isRemoteViewingPreset = false
 }) => {
   return (
     <TabsContent value="base" className="space-y-4 pt-2">
@@ -57,6 +64,11 @@ const BaseControlsTab: React.FC<BaseControlsTabProps> = ({
         <Card className="p-4">
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Frequency Controls</h3>
+            {!isPlaybackActive && (
+              <p className="text-xs text-muted-foreground">
+                Start playback to tune the frequencies of the running session.
+              </p>
+            )}
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -68,6 +80,7 @@ const BaseControlsTab: React.FC<BaseControlsTabProps> = ({
                   max={500} 
                   step={1} 
                   value={[baseFrequency]} 
+                  disabled={!isPlaybackActive}
                   onValueChange={(values) => handleBaseFrequencyChange(values[0])} 
                 />
               </div>
@@ -82,12 +95,35 @@ const BaseControlsTab: React.FC<BaseControlsTabProps> = ({
                   max={30} 
                   step={0.1} 
                   value={[beatFrequency]} 
+                  disabled={!isPlaybackActive}
                   onValueChange={(values) => handleBeatFrequencyChange(values[0])} 
                 />
               </div>
             </div>
           </div>
         </Card>
+        
+        {setIsRecording && (
+          <Card className="p-4">
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Session Tools</h3>
+              
+              <VoiceRecordingControl
+                isRecording={isRecording}
+                setIsRecording={setIsRecording}
+                isPlaybackActive={isPlaybackActive}
+                isRemoteViewingPreset={isRemoteViewingPreset}
+              />
+              
+              <Separator />
+              
+              <EnergyClearingControl
+                isPlaybackActive={isPlaybackActive}
+                isRemoteViewingPreset={isRemoteViewingPreset}
+              />
+            </div>
+          </Card>
+        )}
       </div>
     </TabsContent>
   );

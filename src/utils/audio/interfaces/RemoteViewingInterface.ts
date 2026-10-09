@@ -23,6 +23,23 @@ export class RemoteViewingInterface {
     }
   }
   
+  // Cancel the running target focus timer for remote viewing
+  cancelTargetFocus() {
+    const remotePreset = this.presetManager.getRemoteViewingPreset();
+    if (this.presetManager.getActiveEngine() === remotePreset) {
+      remotePreset.cancelTargetFocus();
+    }
+  }
+  
+  // Check whether a target focus timer is running
+  isTargetFocusRunning(): boolean {
+    const remotePreset = this.presetManager.getRemoteViewingPreset();
+    if (this.presetManager.getActiveEngine() === remotePreset) {
+      return remotePreset.isTargetFocusRunning();
+    }
+    return false;
+  }
+  
   // Clear energy for remote viewing
   clearEnergy(durationMs: number = 5000) {
     const remotePreset = this.presetManager.getRemoteViewingPreset();

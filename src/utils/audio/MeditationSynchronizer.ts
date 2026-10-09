@@ -1,5 +1,5 @@
 
-import { MeditationScript, MeditationSegment, GuidedMeditationState } from '@/types/meditation';
+import { MeditationScript, MeditationSegment, GuidedMeditationState, VoiceSettings } from '@/types/meditation';
 import { VoiceManager } from '@/utils/tts/VoiceManager';
 
 export class MeditationSynchronizer {
@@ -19,7 +19,7 @@ export class MeditationSynchronizer {
     this.onStateChange = onStateChange;
   }
 
-  async startMeditation(script: MeditationScript, voiceSettings: any) {
+  async startMeditation(script: MeditationScript, voiceSettings: VoiceSettings) {
     this.currentScript = script;
     this.currentSegmentIndex = 0;
     this.sessionStartTime = Date.now();
@@ -40,7 +40,7 @@ export class MeditationSynchronizer {
     this.scheduleNextSegment(voiceSettings);
   }
 
-  private async scheduleNextSegment(voiceSettings: any) {
+  private async scheduleNextSegment(voiceSettings: VoiceSettings) {
     if (!this.currentScript || !this.isRunning) return;
 
     const segments = this.currentScript.segments;

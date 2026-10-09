@@ -17,6 +17,23 @@ export class GatewayProcessInterface {
     }
   }
   
+  // Retune the resonant tuning layer
+  setResonantTuning(frequency: number) {
+    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
+    if (this.presetManager.getActiveEngine() === gatewayPreset) {
+      gatewayPreset.setResonantTuning(frequency);
+    }
+  }
+  
+  // Get the current resonant tuning frequency
+  getResonantTuning(): number {
+    const gatewayPreset = this.presetManager.getGatewayProcessPreset();
+    if (this.presetManager.getActiveEngine() === gatewayPreset) {
+      return gatewayPreset.getResonantTuning();
+    }
+    return 7.83;
+  }
+  
   getCurrentFocusLevel(): string {
     const gatewayPreset = this.presetManager.getGatewayProcessPreset();
     if (this.presetManager.getActiveEngine() === gatewayPreset) {

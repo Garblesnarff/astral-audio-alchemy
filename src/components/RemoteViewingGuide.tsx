@@ -75,6 +75,26 @@ const RemoteViewingGuide: React.FC<RemoteViewingGuideProps> = ({ selectedPreset 
                 <li>Record your session using the Voice Notes feature</li>
               </ol>
             </div>
+            
+            <Separator />
+            
+            <div className="space-y-2">
+              <h3 className="text-base font-medium flex items-center">
+                <Target className="w-4 h-4 mr-2 text-indigo-400" />
+                How the Target Timer Structures a Session
+              </h3>
+              <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1">
+                <li><span className="font-medium">Preparation:</span> settle in and clear your mind before contact</li>
+                <li><span className="font-medium">Focus:</span> the receptive phase — sketch impressions without editing</li>
+                <li><span className="font-medium">Reporting:</span> speak or write everything you noticed, however odd</li>
+                <li><span className="font-medium">Integration:</span> assemble the fragments into a single description</li>
+                <li><span className="font-medium">Clearing:</span> a short white-noise segment resets your perceptual slate before the next target</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                A blank mind produces noise, not signal. Writing or speaking impressions as they arise —
+                before you can judge them — is what keeps analytical guesswork out of the record.
+              </p>
+            </div>
           </CardContent>
         </TabsContent>
         

@@ -17,6 +17,8 @@ export class AstralProjectionPreset extends AudioEngineBase {
   private progressiveSequenceActive: boolean = false;
   private progressiveSequenceTimer: number | null = null;
   private returnSignalActive: boolean = false;
+  private returnSignalOscillators: { leftOsc: OscillatorNode; rightOsc: OscillatorNode } | null = null;
+  private vibrationIntensity: number = 0.5; // Normalized 0-1
 
   start(baseFreq: number, beatFreq: number, volume: number = 0.5, preset: string = 'astral-deep-theta') {
     if (!this.audioContext) {
@@ -134,7 +136,8 @@ export class AstralProjectionPreset extends AudioEngineBase {
       this.baseFrequency, 
       this.beatFrequency, 
       this.leftGain, 
-      this.rightGain
+      this.rightGain,
+      this.vibrationIntensity
     );
     
     this.oscillatorLeft = leftOsc;
@@ -164,7 +167,7 @@ export class AstralProjectionPreset extends AudioEngineBase {
     
     // Set up the next phase
     switch (this.currentPhase) {
-      case 0: // Phase 1: Relaxation
+      case 0: { // Phase 1: Relaxation
         const relaxation = relaxationSequenceGenerator(
           this.audioContext,
           this.leftGain,
@@ -174,6 +177,7 @@ export class AstralProjectionPreset extends AudioEngineBase {
         this.oscillatorRight = relaxation.rightOsc;
         this.progressiveSequenceTimer = window.setTimeout(() => this.advanceToNextPhase(), 10 * 60 * 1000); // 10 minutes
         break;
+      }
       case 1: // Phase 2: Body Awareness
         this.oscillatorLeft = this.audioContext.createOscillator();
         this.oscillatorRight = this.audioContext.createOscillator();
@@ -185,7 +189,7 @@ export class AstralProjectionPreset extends AudioEngineBase {
         this.oscillatorRight.start();
         this.progressiveSequenceTimer = window.setTimeout(() => this.advanceToNextPhase(), 10 * 60 * 1000); // 10 minutes
         break;
-      case 2: // Phase 3: Vibrational Stage
+      case 2: { // Phase 3: Vibrational Stage
         const vibration = vibrationStageGenerator(
           this.audioContext,
           210,
@@ -197,7 +201,8 @@ export class AstralProjectionPreset extends AudioEngineBase {
         this.oscillatorRight = vibration.rightOsc;
         this.progressiveSequenceTimer = window.setTimeout(() => this.advanceToNextPhase(), 15 * 60 * 1000); // 15 minutes
         break;
-      case 3: // Phase 4: Separation
+      }
+      case 3: { // Phase 4: Separation
         const separation = epsilonLambdaGenerator(
           this.audioContext,
           200,
@@ -209,7 +214,8 @@ export class AstralProjectionPreset extends AudioEngineBase {
         this.oscillatorRight = separation.rightOsc;
         this.progressiveSequenceTimer = window.setTimeout(() => this.advanceToNextPhase(), 10 * 60 * 1000); // 10 minutes
         break;
-      case 4: // Phase 5: Exploration
+      }
+      case 4: { // Phase 5: Exploration
         const theta = deepThetaWaveGenerator(
           this.audioContext,
           200,
@@ -221,7 +227,8 @@ export class AstralProjectionPreset extends AudioEngineBase {
         this.oscillatorRight = theta.rightOsc;
         this.progressiveSequenceTimer = window.setTimeout(() => this.advanceToNextPhase(), 20 * 60 * 1000); // 20 minutes
         break;
-      case 5: // Phase 6: Return
+      }
+      case 5: { // Phase 6: Return
         const returnSignal = returnSignalGenerator(
           this.audioContext,
           this.leftGain,
@@ -231,6 +238,7 @@ export class AstralProjectionPreset extends AudioEngineBase {
         this.oscillatorRight = returnSignal.rightOsc;
         this.progressiveSequenceTimer = window.setTimeout(() => this.stop(), 10 * 60 * 1000); // 10 minutes then stop
         break;
+      }
       default:
         this.stop();
         return;
@@ -240,18 +248,74 @@ export class AstralProjectionPreset extends AudioEngineBase {
   }
 
   enableReturnSignal() {
-    if (!this.returnSignalActive && this.audioContext && this.isPlaying) {
-      this.returnSignalActive = true;
-      // Implement return signal logic here
-    }
+    if (this.returnSignalActive || !this.audioContext || !this.isPlaying) return;
+    if (!this.leftGain || !this.rightGain) return;
+    
+    this.returnSignalActive = true;
+    // Layer the homing beacon over the current channel gains so the main
+    // frequencies keep playing underneath it
+    this.returnSignalOscillators = returnSignalGenerator(
+      this.audioContext,
+      this.leftGain,
+      this.rightGain
+    );
   }
 
   disableReturnSignal() {
     this.returnSignalActive = false;
-    // Remove return signal if active
+    
+    if (this.returnSignalOscillators) {
+      this.returnSignalOscillators.leftOsc.stop();
+      this.returnSignalOscillators.rightOsc.stop();
+      this.returnSignalOscillators = null;
+    }
+  }
+  
+  /**
+   * Check whether the return signal homing layer is currently active
+   */
+  isReturnSignalEnabled(): boolean {
+    return this.returnSignalActive;
+  }
+  
+  /**
+   * Set how intense the vibrational stage feels (percentage, 10-100)
+   */
+  setVibrationIntensity(intensity: number): void {
+    this.vibrationIntensity = Math.min(1, Math.max(0, intensity / 100));
+    
+    // Restart the vibrational generator so the new depth takes effect
+    if (this.isPlaying && this.currentPreset === 'astral-vibrational') {
+      this.stopCarrierOscillators();
+      this.setupVibrationalStage();
+    }
+  }
+  
+  /**
+   * Get the current phase of the progressive astral journey
+   */
+  getCurrentPhase(): number {
+    return this.currentPhase;
+  }
+  
+  /**
+   * Stop only the carrier oscillators, leaving gains and timers intact
+   */
+  private stopCarrierOscillators() {
+    if (this.oscillatorLeft) {
+      this.oscillatorLeft.stop();
+      this.oscillatorLeft = null;
+    }
+    
+    if (this.oscillatorRight) {
+      this.oscillatorRight.stop();
+      this.oscillatorRight = null;
+    }
   }
 
   stop() {
+    this.disableReturnSignal();
+    
     if (this.oscillatorLeft) {
       this.oscillatorLeft.stop();
       this.oscillatorLeft = null;

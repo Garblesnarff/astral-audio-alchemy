@@ -4,7 +4,12 @@ import { useAudioEngine } from './audio/useAudioEngine';
 import { useAudioControls } from './audio/useAudioControls';
 import { useAudioParameters } from './audio/useAudioParameters';
 import { usePresetSelection } from './audio/usePresetSelection';
-import { getPresetById } from '@/utils/presets';
+
+export interface AudioStateGlobals {
+  baseFrequency: number;
+  beatFrequency: number;
+  volume: number;
+}
 
 export function useAudioState() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -19,11 +24,10 @@ export function useAudioState() {
   // Set up global variables needed by useAudioControls
   // This is needed because we broke up the hook but need to share these variables
   if (typeof window !== 'undefined') {
-    (window as any).audioStateGlobals = {
+    (window as unknown as { audioStateGlobals?: AudioStateGlobals }).audioStateGlobals = {
       baseFrequency,
       beatFrequency,
       volume,
-      getPresetById
     };
   }
   

@@ -50,7 +50,7 @@ export class RemoteViewingPreset extends RemoteViewingBase {
     this.isPlaying = true;
     this.baseFrequency = baseFreq;
     this.beatFrequency = beatFreq;
-    this.volume = volume;
+    this.baseVolume = volume;
     this.currentPreset = preset;
     
     if (this.audioContext && this.leftGain && this.rightGain && this.masterGain) {
@@ -113,6 +113,20 @@ export class RemoteViewingPreset extends RemoteViewingBase {
   }
   
   /**
+   * Cancel a running target focus timer
+   */
+  cancelTargetFocus(): void {
+    this.targetTimer.cancelTimer();
+  }
+  
+  /**
+   * Check whether a target focus timer is currently running
+   */
+  isTargetFocusRunning(): boolean {
+    return this.targetTimer.isRunning();
+  }
+  
+  /**
    * Start audio recording
    */
   startRecording(): Promise<void> {
@@ -138,6 +152,26 @@ export class RemoteViewingPreset extends RemoteViewingBase {
    */
   setProtocol(protocol: 'crv' | 'erv' | 'arv'): void {
     this.protocolManager.setProtocol(protocol);
+  }
+  
+  /**
+   * Update the base carrier frequency of the running session
+   */
+  override setBaseFrequency(frequency: number): void {
+    this.baseFrequency = frequency;
+    if (this.isPlaying) {
+      this.oscillators.setBaseFrequency(frequency);
+    }
+  }
+  
+  /**
+   * Update the binaural beat frequency of the running session
+   */
+  override setBeatFrequency(frequency: number): void {
+    this.beatFrequency = frequency;
+    if (this.isPlaying) {
+      this.oscillators.setBeatFrequency(frequency);
+    }
   }
   
   /**

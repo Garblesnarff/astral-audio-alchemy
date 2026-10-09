@@ -33,6 +33,11 @@ const GatewayProcessControls: React.FC<GatewayProcessControlsProps> = ({
         setCurrentFocusLevel(focusLevel);
       }
       
+      const resonantFrequency = audioEngine.getResonantTuning();
+      if (resonantFrequency) {
+        setResonantTuning(resonantFrequency);
+      }
+      
       // Start progress tracking
       const progressInterval = setInterval(() => {
         const progress = audioEngine.getGatewaySessionProgress();
@@ -58,7 +63,10 @@ const GatewayProcessControls: React.FC<GatewayProcessControlsProps> = ({
   
   const handleResonantTuningChange = (value: number) => {
     setResonantTuning(value);
-    // In a real implementation, this would adjust the resonant tuning frequency
+    
+    if (isPlaying) {
+      audioEngine.setResonantTuning(value);
+    }
   };
   
   const getLevelName = (level: string): string => {

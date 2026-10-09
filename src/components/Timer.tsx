@@ -20,27 +20,19 @@ const Timer: React.FC<TimerProps> = ({ onTimerEnd, isPlaying }) => {
   ];
   
   useEffect(() => {
-    let interval: number | null = null;
+    if (!isTimerActive || !isPlaying) return;
     
-    if (isTimerActive && isPlaying && remainingTime > 0) {
-      interval = window.setInterval(() => {
-        setRemainingTime(prev => {
-          if (prev <= 1) {
-            clearInterval(interval!);
-            setIsTimerActive(false);
-            onTimerEnd();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (!isPlaying || remainingTime === 0) {
-      if (interval) clearInterval(interval);
+    if (remainingTime <= 0) {
+      setIsTimerActive(false);
+      onTimerEnd();
+      return;
     }
     
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    const interval = window.setInterval(() => {
+      setRemainingTime(prev => Math.max(0, prev - 1));
+    }, 1000);
+    
+    return () => window.clearInterval(interval);
   }, [isTimerActive, isPlaying, remainingTime, onTimerEnd]);
   
   const handleSetTimer = (minutes: number) => {

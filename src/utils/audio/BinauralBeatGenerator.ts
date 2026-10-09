@@ -45,7 +45,19 @@ export class BinauralBeatGenerator extends BinauralBeatCore {
   disableReturnSignal() {
     this.astralInterface.disableReturnSignal();
   }
-
+  
+  isReturnSignalEnabled(): boolean {
+    return this.astralInterface.isReturnSignalEnabled();
+  }
+  
+  setVibrationIntensity(intensity: number) {
+    this.astralInterface.setVibrationIntensity(intensity);
+  }
+  
+  getAstralJourneyPhase(): number {
+    return this.astralInterface.getAstralJourneyPhase();
+  }
+  
   // Remote viewing methods
   startTargetFocus(config: {
     countdownSeconds: number;
@@ -55,6 +67,14 @@ export class BinauralBeatGenerator extends BinauralBeatCore {
     clearingSeconds: number;
   }) {
     this.remoteInterface.startTargetFocus(config);
+  }
+  
+  cancelTargetFocus() {
+    this.remoteInterface.cancelTargetFocus();
+  }
+  
+  isTargetFocusRunning(): boolean {
+    return this.remoteInterface.isTargetFocusRunning();
   }
   
   clearEnergy(durationMs: number = 5000) {
@@ -88,5 +108,13 @@ export class BinauralBeatGenerator extends BinauralBeatCore {
   
   getGatewaySessionProgress(): number {
     return this.gatewayInterface.getGatewaySessionProgress();
+  }
+  
+  setResonantTuning(frequency: number) {
+    this.gatewayInterface.setResonantTuning(frequency);
+  }
+  
+  getResonantTuning(): number {
+    return this.gatewayInterface.getResonantTuning();
   }
 }

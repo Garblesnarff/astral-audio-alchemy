@@ -15,6 +15,8 @@ interface TargetTimerTabProps {
     integrationSeconds: number;
     clearingSeconds: number;
   }) => void;
+  cancelTargetFocus?: () => void;
+  isTargetFocusRunning?: boolean;
   isPlaybackActive?: boolean;
   isRemoteViewingPreset?: boolean;
   targetFocusConfig?: {
@@ -33,8 +35,11 @@ interface TargetTimerTabProps {
   }>>;
 }
 
-const TargetTimerTab: React.FC<TargetTimerTabProps> = ({ startTargetFocus }) => {
-  const [isRunning, setIsRunning] = useState(false);
+const TargetTimerTab: React.FC<TargetTimerTabProps> = ({ 
+  startTargetFocus,
+  cancelTargetFocus,
+  isTargetFocusRunning = false
+}) => {
   const [countdown, setCountdown] = useState(60); // 1 minute
   const [focus, setFocus] = useState(900); // 15 minutes
   const [reporting, setReporting] = useState(600); // 10 minutes
@@ -42,7 +47,6 @@ const TargetTimerTab: React.FC<TargetTimerTabProps> = ({ startTargetFocus }) => 
   const [clearing, setClearing] = useState(30); // 30 seconds
 
   const handleStart = () => {
-    setIsRunning(true);
     startTargetFocus({
       countdownSeconds: countdown,
       focusSeconds: focus,
@@ -53,8 +57,7 @@ const TargetTimerTab: React.FC<TargetTimerTabProps> = ({ startTargetFocus }) => 
   };
 
   const handleStop = () => {
-    setIsRunning(false);
-    // Stop functionality would be implemented in the actual component
+    cancelTargetFocus?.();
   };
 
   return (
@@ -121,7 +124,7 @@ const TargetTimerTab: React.FC<TargetTimerTabProps> = ({ startTargetFocus }) => 
           </div>
           
           <div className="flex justify-center pt-2">
-            {!isRunning ? (
+            {!isTargetFocusRunning ? (
               <Button 
                 size="sm" 
                 className="w-full" 

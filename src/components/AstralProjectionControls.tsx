@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { 
@@ -26,20 +25,60 @@ import audioEngine from '@/utils/audioEngine';
 interface AstralProjectionControlsProps {
   isPlaying: boolean;
   selectedPreset: string;
+  onJourneyComplete?: () => void;
 }
 
 const AstralProjectionControls: React.FC<AstralProjectionControlsProps> = ({ 
   isPlaying, 
-  selectedPreset 
+  selectedPreset,
+  onJourneyComplete
 }) => {
   const [returnSignalEnabled, setReturnSignalEnabled] = useState(false);
   const [journeyPhase, setJourneyPhase] = useState(0);
   const [vibrationIntensity, setVibrationIntensity] = useState(50);
   
-  // Only show for astral projection presets
-  if (!selectedPreset.startsWith('astral-')) {
-    return null;
-  }
+  const isVibrationalPreset = selectedPreset === 'astral-vibrational';
+  const isProgressivePreset = selectedPreset === 'astral-progressive';
+  const isAstralPreset = selectedPreset.startsWith('astral-');
+  
+  // Track the engine's journey phase and detect sessions the engine ended itself
+  useEffect(() => {
+    if (!isPlaying || !isProgressivePreset) return;
+    
+    const syncJourneyProgress = () => {
+      // The engine reports the phase it has just started (1-based)
+      setJourneyPhase(Math.max(0, audioEngine.getAstralJourneyPhase() - 1));
+      
+      if (!audioEngine.getIsPlaying()) {
+        setJourneyPhase(0);
+        onJourneyComplete?.();
+      }
+    };
+    
+    syncJourneyProgress();
+    const intervalId = window.setInterval(syncJourneyProgress, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [isPlaying, isProgressivePreset, onJourneyComplete]);
+  
+  // Reset the phase indicator whenever playback stops
+  useEffect(() => {
+    if (!isPlaying) {
+      setJourneyPhase(0);
+    }
+  }, [isPlaying]);
+  
+  // Reflect the engine's return signal state when switching between astral presets
+  useEffect(() => {
+    setReturnSignalEnabled(audioEngine.isReturnSignalEnabled());
+  }, [selectedPreset]);
+  
+  // Make sure the return signal layer never outlives the session
+  useEffect(() => {
+    if (isPlaying || !returnSignalEnabled) return;
+    
+    audioEngine.disableReturnSignal();
+    setReturnSignalEnabled(false);
+  }, [isPlaying, returnSignalEnabled]);
   
   const handleReturnSignalToggle = (checked: boolean) => {
     setReturnSignalEnabled(checked);
@@ -53,8 +92,7 @@ const AstralProjectionControls: React.FC<AstralProjectionControlsProps> = ({
   const handleVibrationIntensityChange = (value: number[]) => {
     const intensity = value[0];
     setVibrationIntensity(intensity);
-    // This would need to be implemented in the AstralProjectionPreset class
-    // We could adjust some parameters based on this value
+    audioEngine.setVibrationIntensity(intensity);
   };
   
   // Progressive Journey phases
@@ -68,7 +106,12 @@ const AstralProjectionControls: React.FC<AstralProjectionControlsProps> = ({
   ];
   
   // Show journey progress bar for the progressive preset
-  const showJourneyProgress = selectedPreset === 'astral-progressive' && isPlaying;
+  const showJourneyProgress = isProgressivePreset && isPlaying;
+  
+  // Only render for astral projection presets
+  if (!isAstralPreset) {
+    return null;
+  }
   
   // Calculate current preset info
   let currentPhaseInfo;
@@ -129,7 +172,7 @@ const AstralProjectionControls: React.FC<AstralProjectionControlsProps> = ({
           </div>
         )}
         
-        {selectedPreset === 'astral-vibrational' && (
+        {isVibrationalPreset && (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm">Vibration Intensity</span>
@@ -141,6 +184,7 @@ const AstralProjectionControls: React.FC<AstralProjectionControlsProps> = ({
               max={100}
               step={5}
               onValueChange={handleVibrationIntensityChange}
+              disabled={!isPlaying}
               className="my-2"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -156,6 +200,7 @@ const AstralProjectionControls: React.FC<AstralProjectionControlsProps> = ({
               id="return-signal" 
               checked={returnSignalEnabled} 
               onCheckedChange={handleReturnSignalToggle}
+              disabled={!isPlaying}
             />
             <label htmlFor="return-signal" className="text-sm cursor-pointer">
               Enable Return Signal

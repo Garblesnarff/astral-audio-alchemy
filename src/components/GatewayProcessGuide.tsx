@@ -63,6 +63,23 @@ const GatewayProcessGuide: React.FC = () => {
               <li><strong>Focus 21:</strong> Other Energy Systems</li>
             </ul>
           </div>
+          
+          <div className="bg-muted/30 p-3 rounded-md space-y-2">
+            <h4 className="font-medium flex items-center">
+              <Waves className="h-4 w-4 mr-2 text-cyan-500" />
+              Using the Gateway Controls
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              The Gateway Process controls track which Focus level is active and how far the session has
+              progressed. Focus level buttons switch the pattern while the session runs, and the resonant
+              tuning slider adjusts the Schumann reference tone (7.83 Hz by default) underneath the
+              binaural beat.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Headphones are required: the binaural beat only appears as the difference between the two
+              ears, and the Hemi-Sync signal depends on that difference reaching both hemispheres.
+            </p>
+          </div>
         </TabsContent>
         
         <TabsContent value="waves" className="space-y-4 pt-4">

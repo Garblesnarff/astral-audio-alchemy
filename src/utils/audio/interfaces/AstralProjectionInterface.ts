@@ -24,4 +24,30 @@ export class AstralProjectionInterface {
       astralPreset.disableReturnSignal();
     }
   }
+  
+  // Check whether the return signal homing layer is active
+  isReturnSignalEnabled(): boolean {
+    const astralPreset = this.presetManager.getAstralProjectionPreset();
+    if (this.presetManager.getActiveEngine() === astralPreset) {
+      return astralPreset.isReturnSignalEnabled();
+    }
+    return false;
+  }
+  
+  // Set the intensity of the vibrational stage (percentage, 10-100)
+  setVibrationIntensity(intensity: number) {
+    const astralPreset = this.presetManager.getAstralProjectionPreset();
+    if (this.presetManager.getActiveEngine() === astralPreset) {
+      astralPreset.setVibrationIntensity(intensity);
+    }
+  }
+  
+  // Get the current phase of the progressive astral journey
+  getAstralJourneyPhase(): number {
+    const astralPreset = this.presetManager.getAstralProjectionPreset();
+    if (this.presetManager.getActiveEngine() === astralPreset) {
+      return astralPreset.getCurrentPhase();
+    }
+    return 0;
+  }
 }

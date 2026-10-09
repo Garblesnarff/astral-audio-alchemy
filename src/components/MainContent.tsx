@@ -7,6 +7,8 @@ import PresetSelection from '@/components/PresetSelection';
 import LucidDreamingControls from '@/components/LucidDreamingControls';
 import AstralProjectionControls from '@/components/AstralProjectionControls';
 import AstralProjectionGuide from '@/components/AstralProjectionGuide';
+import GatewayProcessControls from '@/components/GatewayProcessControls';
+import GatewayProcessGuide from '@/components/GatewayProcessGuide';
 import RemoteViewingControls from '@/components/remote-viewing/RemoteViewingControls';
 import RemoteViewingGuide from '@/components/RemoteViewingGuide';
 import LucidDreamingGuide from '@/components/LucidDreamingGuide';
@@ -47,6 +49,7 @@ const MainContent: React.FC<MainContentProps> = ({
   const isLucidDreamingPreset = selectedPreset && selectedPreset.startsWith('lucid-');
   const isAstralProjectionPreset = selectedPreset && selectedPreset.startsWith('astral-');
   const isRemoteViewingPreset = selectedPreset && selectedPreset.startsWith('remote-');
+  const isGatewayProcessPreset = selectedPreset && selectedPreset.startsWith('gateway-');
   const isGuidedPreset = selectedPreset && selectedPreset.startsWith('guided-');
   
   const {
@@ -105,11 +108,19 @@ const MainContent: React.FC<MainContentProps> = ({
             <AstralProjectionControls 
               isPlaying={isPlaying}
               selectedPreset={selectedPreset}
+              onJourneyComplete={handleTimerEnd}
             />
           )}
           
           {isRemoteViewingPreset && (
             <RemoteViewingControls 
+              isPlaying={isPlaying}
+              selectedPreset={selectedPreset}
+            />
+          )}
+
+          {isGatewayProcessPreset && (
+            <GatewayProcessControls
               isPlaying={isPlaying}
               selectedPreset={selectedPreset}
             />
@@ -147,6 +158,10 @@ const MainContent: React.FC<MainContentProps> = ({
           
           {isRemoteViewingPreset && (
             <RemoteViewingGuide selectedPreset={selectedPreset} />
+          )}
+          
+          {isGatewayProcessPreset && (
+            <GatewayProcessGuide />
           )}
         </div>
       </div>

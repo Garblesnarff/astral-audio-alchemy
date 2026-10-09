@@ -8,7 +8,7 @@ export function createFocusLevelSignal(
   outputGain.gain.value = 0.3; // Lower amplitude than primary signal
   
   let frequencies: number[] = [];
-  let oscillators: OscillatorNode[] = [];
+  const oscillators: OscillatorNode[] = [];
   
   // Determine frequencies based on focus level
   switch (focusLevel) {

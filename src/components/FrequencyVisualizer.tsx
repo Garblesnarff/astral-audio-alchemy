@@ -9,6 +9,15 @@ interface FrequencyVisualizerProps {
 const FrequencyVisualizer: React.FC<FrequencyVisualizerProps> = ({ isPlaying }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+
+  // Reuse the frequency buffer, resizing it only when the analyser changes
+  const getFrequencyData = (frequencyBinCount: number): Uint8Array => {
+    if (!dataArrayRef.current || dataArrayRef.current.length !== frequencyBinCount) {
+      dataArrayRef.current = new Uint8Array(frequencyBinCount);
+    }
+    return dataArrayRef.current;
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -17,11 +26,6 @@ const FrequencyVisualizer: React.FC<FrequencyVisualizerProps> = ({ isPlaying }) 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const analyser = audioEngine.getAnalyser();
-    if (!analyser) return;
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    
     const draw = () => {
       if (!isPlaying) {
         // Create idle animation when not playing
@@ -30,7 +34,17 @@ const FrequencyVisualizer: React.FC<FrequencyVisualizerProps> = ({ isPlaying }) 
         return;
       }
       
-      analyser.getByteFrequencyData(dataArray);
+      // The active preset can change while playing, and each preset owns its own
+      // analyser, so re-read it every frame instead of caching it once
+      const analyser = audioEngine.getAnalyser();
+      if (!analyser) {
+        createIdleAnimation(ctx, canvas);
+        animationRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      
+      const frequencyData = getFrequencyData(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(frequencyData);
       
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -44,7 +58,7 @@ const FrequencyVisualizer: React.FC<FrequencyVisualizerProps> = ({ isPlaying }) 
       ctx.fillRect(0, 0, width, height);
       
       // Calculate bar width
-      const barWidth = (width / dataArray.length) * 2.5;
+      const barWidth = (width / frequencyData.length) * 2.5;
       let barHeight;
       let x = 0;
       
@@ -55,8 +69,8 @@ const FrequencyVisualizer: React.FC<FrequencyVisualizerProps> = ({ isPlaying }) 
       gradient.addColorStop(1, 'rgba(99, 102, 241, 0.5)'); // indigo
       
       // Draw bars
-      for (let i = 0; i < dataArray.length; i++) {
-        barHeight = dataArray[i] / 2;
+      for (let i = 0; i < frequencyData.length; i++) {
+        barHeight = frequencyData[i] / 2;
         
         ctx.fillStyle = gradient;
         ctx.fillRect(x, height - barHeight, barWidth, barHeight);

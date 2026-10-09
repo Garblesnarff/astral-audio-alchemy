@@ -128,6 +128,37 @@ const AstralProjectionGuide: React.FC<AstralProjectionGuideProps> = ({ selectedP
       )
     },
     {
+      title: 'Choosing a Preset',
+      icon: <ArrowUpFromLine className="h-4 w-4" />,
+      content: (
+        <div className="space-y-2 text-sm">
+          <p>Each preset in this app targets a different point in the process:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>
+              <span className="font-medium">Deep Theta Astral</span>: A steady 6.3 Hz theta beat for the hypnagogic
+              state — the usual starting point for separation attempts.
+            </li>
+            <li>
+              <span className="font-medium">Epsilon-Lambda Mix</span>: An ultra-slow 0.5 Hz difference paired with
+              high-frequency carriers, used when the goal is energy-body separation.
+            </li>
+            <li>
+              <span className="font-medium">777 Hz Cosmic</span>: A harmonic carrier often used for shorter,
+              exploratory sessions.
+            </li>
+            <li>
+              <span className="font-medium">Vibrational Stage</span>: A slow modulation that rises and falls to mirror
+              the vibrational stage. Use the intensity slider to match your comfort level.
+            </li>
+            <li>
+              <span className="font-medium">Full Astral Journey</span>: Runs all six phases in sequence, from
+              relaxation through return, and stops itself at the end.
+            </li>
+          </ul>
+        </div>
+      )
+    },
+    {
       title: 'Safety Considerations',
       icon: <AlertCircle className="h-4 w-4" />,
       content: (

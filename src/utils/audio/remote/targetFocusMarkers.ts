@@ -48,8 +48,7 @@ export function targetFocusMarkers(
   }, intervalMs);
   
   // Store the interval ID for cleanup
-  // @ts-ignore - Adding a custom property for cleanup
-  markerOsc.markerInterval = markerInterval;
+  (markerOsc as OscillatorNode & { markerInterval?: ReturnType<typeof setInterval> }).markerInterval = markerInterval;
   
   nodes.push(markerOsc);
   return nodes;
